@@ -1,0 +1,75 @@
+
+:root {
+    --main-bg-color: #9339c6;
+
+}
+
+/*#C69339*/
+/*#39C693*/
+
+.navbar{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    background-color: #9339c6;
+    height: 100px;
+
+}
+
+.picture-placeholder{
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    padding: 0 100px 0 0;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    align-items: center;
+
+}
+
+.picture-profile{
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.profile-detail{
+    background-color: #0A0093;
+    color: #899300;
+    width: 200px;
+    height: 400px;
+    position: absolute;
+    margin-top: 25px;
+}
+
+.task-container{
+    display: flex;
+    margin: 5%;
+    padding: 5px;
+    gap: 10px;
+
+}
+.task-box{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.task-list{
+    display: flex;
+    padding: 10px;
+    background-color: #9339C6;
+    flex-direction: column;
+}
+
+.task{
+    background-color: #C69339;
+    color: black;
+    width: 200px;
+    height: auto;
+    padding: 10px;
+
+}
+
+
+
