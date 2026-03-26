@@ -16,11 +16,16 @@ type TaskList = {
     title: string;
 }
 
+// Option B: Using an Index Signature
+type TaskMap = {
+    [key: string]: Task[];
+};
+
 
 
 function Content() {
 
-    const [taskList, setTaskList] = useState([
+    const [taskList, setTaskList] = useState<TaskList[]>([
         {
             title: "Todo",
             id: crypto.randomUUID(),
@@ -31,24 +36,45 @@ function Content() {
             id: crypto.randomUUID(),
 
         },
-        {title: "Done", id: crypto.randomUUID(), taskList: []}]);
+        {
+            title: "Done",
+            id: crypto.randomUUID()
+        }]);
 
-    const [tasks, setTasks] = useState([
-        {id:crypto.randomUUID(), listId: taskList[0].id, title: "Card 1", desc: "This is card 1"},
-        {id:crypto.randomUUID(), listId: taskList[0].id, title:"Card 2", desc:"This is card 2"},
-        {id:crypto.randomUUID(), listId: taskList[1].id, title:"Card 1", desc:"This is card 1"},
-        {id:crypto.randomUUID(), listId: taskList[2].id, title: "Card 2", desc:"This is card 2"}
+    const [tasks, setTasks] = useState<Task[]>([
+        {id:crypto.randomUUID(), listId: taskList[0].id, title: "Card 1", description: "This is card 1"},
+        {id:crypto.randomUUID(), listId: taskList[0].id, title:"Card 2", description:"This is card 2"},
+        {id:crypto.randomUUID(), listId: taskList[1].id, title:"Card 1", description:"This is card 1"},
+        {id:crypto.randomUUID(), listId: taskList[2].id, title: "Card 2", description:"This is card 2"}
     ]);
 
-    const groupedTasks = useMemo(()=> tasks.reduce((acc, val)=>))
+    const groupedTasks: TaskMap = useMemo(()=>
+        tasks.reduce((acc: TaskMap, val: Task)=> {
+            if(!acc[val.listId]){acc[val.listId] = [];}
+            acc[val.listId].push(val);
+            return acc;
+
+        }, {} as TaskMap),
+        [tasks]);
 
 
 
     function addNewList(title:string){
-        setTaskList([...taskList, {id:crypto.randomUUID(), title: title, taskList: []}]);
+        setTaskList([...taskList, {id:crypto.randomUUID(), title: title}]);
     }
-    function addNewTask(title:string, desc:string){
 
+    function addNewTask(title:string, desc:string, listId: string){
+        const task = {id: crypto.randomUUID(), listId: listId, title: title, description: desc };
+        setTasks([...tasks, task]);
+
+    }
+
+    function deleteTask(taskId:string){
+        const taskIndex = tasks.findIndex(task => task.id === taskId);
+
+        if(taskIndex > -1){
+            setTasks(tasks.toSpliced(taskIndex, 1));
+        }
     }
 
 
@@ -56,7 +82,15 @@ function Content() {
     return (
         <div className={"task-container"}>
 
-            {taskList.map((item) => (<TaskList key={item.id} title={item.title} taskList={item.taskList}/>))}
+            {taskList.map((item) => (<TaskList key={item.id}
+                                               id={item.id}
+                                               title={item.title}
+                                               taskList={groupedTasks[item.id] ?? []}
+                                               onAddTask={(title, desc) =>
+                                                   addNewTask(title, desc, item.id)}
+                                               onDeleteTask={deleteTask}
+
+            />))}
             <AddList onAddList={addNewList}/>
         </div>
     )
