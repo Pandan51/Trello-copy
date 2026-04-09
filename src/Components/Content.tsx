@@ -57,7 +57,11 @@ function Content() {
         }, {} as TaskMap),
         [tasks]);
 
+    function taskById(id: string): Task | undefined{
+       const index = tasks.findIndex(task => task.id === id);
 
+       return index >= 0 ? tasks[index] : undefined;
+    }
 
     function addNewList(title:string){
         setTaskList([...taskList, {id:crypto.randomUUID(), title: title}]);
@@ -73,12 +77,25 @@ function Content() {
         const taskIndex = tasks.findIndex(task => task.id === taskId);
 
         if(taskIndex > -1){
+            // @ts-ignore
             setTasks(tasks.toSpliced(taskIndex, 1));
         }
     }
 
 
-
+    function changeTaskId(taskId:string, listId:string){
+        const task = taskById(taskId);
+        if(task) {
+            task.listId = listId;
+            let arr = tasks.filter(task => task.id !== taskId);
+            arr = [...arr, task];
+            setTasks(arr);
+            console.log(true);
+            return true;
+        }
+        console.log(false);
+        return false;
+    }
     return (
         <div className={"task-container"}>
 
@@ -89,6 +106,7 @@ function Content() {
                                                onAddTask={(title, desc) =>
                                                    addNewTask(title, desc, item.id)}
                                                onDeleteTask={deleteTask}
+                                               onChangeTaskId={changeTaskId}
 
             />))}
             <AddList onAddList={addNewList}/>

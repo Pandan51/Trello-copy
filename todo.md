@@ -1,3 +1,7 @@
-Udělat CRUD
+Kanban drag & drop
 
-seskupit tasks a udělat task list efektivne
+Pop up window při rozkliknutí tasky
+
+HTML dialog
+
+Backend prep pro frontend
