@@ -4,4 +4,4 @@ Pop up window při rozkliknutí tasky
 
 HTML dialog
 
-Backend prep pro frontend
+Backend prep pro frontend (NESTJS)

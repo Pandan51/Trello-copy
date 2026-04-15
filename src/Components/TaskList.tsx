@@ -1,13 +1,14 @@
 // import { Task} from "../models/Task";
 import AddTask from "./AddTask.tsx";
 // import DeleteTask from "./DeleteTask.tsx";
-import TaskComponent from "./Task.tsx";
+import TaskComponent from "./TaskComponent.tsx";
 
 type Task = {
     id: string;
     listId: string;
     title: string;
     description: string;
+    isGhost?: boolean;
 }
 type Props = {
     id: string;
@@ -16,6 +17,9 @@ type Props = {
     onAddTask: (title:string, desc:string) => void
     onDeleteTask: (taskId: string) => void; // Expects an ID
     onChangeTaskId: (id: string, listId:string) => void;
+    onHover: (taskId: string, before: boolean) => void;
+    onDragStartTask: (taskId: string) => void;
+    onDragEndTask: () => void;
 }
 //
 // const handleDragStart = (e: React.DragEvent) => {
@@ -27,24 +31,39 @@ type Props = {
 // Handler for the Drop Zone
 
 
-function TaskList({id, title, taskList, onAddTask, onDeleteTask, onChangeTaskId}:Props) {
+function TaskList({id, title, taskList, onAddTask, onDeleteTask, onChangeTaskId, onHover, onDragStartTask, onDragEndTask}:Props) {
+    // const handleDragOver = (e: React.DragEvent) => {
+    //     // CRITICAL: This allows the drop to happen
+    //     e.preventDefault();
+    //     e.dataTransfer.dropEffect = "move";
+    //     const data = e.dataTransfer.getData("text/plain");
+    //     console.log("Dragged over: ", data);
+    // };
+    //
+    // const handleDrop = (e: React.DragEvent) => {
+    //     e.preventDefault();
+    //     const data = e.dataTransfer.getData("text/plain");
+    //
+    //     // In a real app, you would update state here!
+    //     console.log("Dropped:", data);
+    //     console.log("Dropped in list with id: ", id);
+    //     onChangeTaskId(data, id);
+    // };
+
+    // 3. Simplify drag over (just needs to prevent default to allow dropping)
     const handleDragOver = (e: React.DragEvent) => {
-        // CRITICAL: This allows the drop to happen
         e.preventDefault();
         e.dataTransfer.dropEffect = "move";
-        const data = e.dataTransfer.getData("text/plain");
-        console.log("Dragged over: ", data);
     };
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         const data = e.dataTransfer.getData("text/plain");
 
-        // In a real app, you would update state here!
-        console.log("Dropped:", data);
-        console.log("Dropped in list with id: ", id);
+        console.log("Dropped task ID:", data, "into list:", id);
         onChangeTaskId(data, id);
     };
+
     return(
         <div className={"task-list"} onDragOver={handleDragOver} onDrop={handleDrop}>
             <h2>{title}</h2>
@@ -56,7 +75,11 @@ function TaskList({id, title, taskList, onAddTask, onDeleteTask, onChangeTaskId}
                         id={task.id}
                         title={task.title}
                         description={task.description}
+                        isGhost={task.isGhost}
                         onDeleteTask={onDeleteTask}
+                        onHover={onHover}
+                        onDragStartTask={onDragStartTask}
+                        onDragEndTask={onDragEndTask}
 
 
                 />))}
