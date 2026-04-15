@@ -1,10 +1,7 @@
-<h2>Backend</h2>
-<p>Endpointy
-**Databaze</p>
-<p> Práce s entitama</p>
+Kanban drag & drop a placeholder
 
-<p>Zajistit order u tasks, ať při resetu jsou seřazené</p>
+Pop up window při rozkliknutí tasky
 
-<p>Použít fetch na frontendu, asi use effect</p>
-<p>Cors</p>
+HTML dialog
 
+Backend prep pro frontend (NESTJS)
