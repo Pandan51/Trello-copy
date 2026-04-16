@@ -41,6 +41,10 @@ function Content() {
             id: crypto.randomUUID()
         }]);
 
+    const response = await fetch("http://localhost:3000/lists");
+
+    setTaskList([response, ...taskList]);
+
     const [tasks, setTasks] = useState<Task[]>([
         {id:crypto.randomUUID(), listId: taskList[0].id, title: "Card 1", description: "This is card 1"},
         {id:crypto.randomUUID(), listId: taskList[0].id, title:"Card 2", description:"This is card 2"},
@@ -89,19 +93,45 @@ function Content() {
     }
 
 
-    function changeTaskId(taskId:string, listId:string){
-        const task = taskById(taskId);
-        if(task) {
-            task.listId = listId;
-            let arr = tasks.filter(task => task.id !== taskId);
-            arr = [...arr, task];
-            setTasks(arr);
-            console.log(true);
-            handleDragEnd();
-            return true;
-        }
-        console.log(false);
-        return false;
+    function changeTaskId(taskId: string, listId: string) {
+        setTasks(prevTasks => {
+            // 1. Find the task we are moving
+            const taskToMove = prevTasks.find(t => t.id === taskId);
+            if (!taskToMove) return prevTasks;
+
+            // 2. Create a new array WITHOUT the dragged task
+            let newTasks = prevTasks.filter(t => t.id !== taskId);
+
+            // 3. Create a copy of the task with the updated listId
+            const updatedTask = { ...taskToMove, listId: listId };
+
+            // 4. Figure out exactly where to insert it based on the ghost placeholder
+            if (placeholder && placeholder.listId === listId) {
+                // Get the other tasks that are already in this specific column
+                const tasksInTargetList = newTasks.filter(t => t.listId === listId);
+
+                if (placeholder.index >= tasksInTargetList.length) {
+                    // If the index is at the very end, just push it
+                    newTasks.push(updatedTask);
+                } else {
+                    // Find the specific task that is currently sitting where we want to drop
+                    const taskAtTargetSpot = tasksInTargetList[placeholder.index];
+                    // Find its actual index in our main flat array
+                    const flatIndexToInsert = newTasks.findIndex(t => t.id === taskAtTargetSpot.id);
+
+                    // Splice it exactly into the main array
+                    newTasks.splice(flatIndexToInsert, 0, updatedTask);
+                }
+            } else {
+                // Failsafe: if no placeholder is tracked, just add it to the end
+                newTasks.push(updatedTask);
+            }
+
+            return newTasks;
+        });
+
+        // 5. Instantly clean up the UI states
+        handleDragEnd();
     }
 
     function handleDragStartTask(taskId: string) {
@@ -186,6 +216,7 @@ function Content() {
                         taskList={renderTasks} // Pass the modified array!
                         onAddTask={(title, desc) => addNewTask(title, desc, item.id)}
                         onDeleteTask={deleteTask}
+                        onChangeTaskId={changeTaskId}
                         onHover={(taskId:string, before:boolean) => handleTaskHover(taskId, before, item.id)}
                         onDragStartTask={handleDragStartTask}
                         onDragEndTask={handleDragEnd}
