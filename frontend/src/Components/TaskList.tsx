@@ -1,124 +1,94 @@
-import AddTask from "./CRUD/AddTask.tsx";
+// import { Task} from "../models/Task";
+import AddTask from "./AddTask.tsx";
+// import DeleteTask from "./DeleteTask.tsx";
 import TaskComponent from "./TaskComponent.tsx";
-import type { Task, TaskListType } from "../types";
-import * as React from "react";
-import { useContext } from "react";
-import { ThemeContext } from "../Context/ThemeContext.ts";
-import { adjustColorBrightness } from "../utils/colorUtils.ts";
 
-// type Task = {
-//   id: string;
-//   listId: string;
-//   title: string;
-//   description: string;
-//   isGhost?: boolean;
+type Task = {
+    id: string;
+    listId: string;
+    title: string;
+    description: string;
+    isGhost?: boolean;
+}
+type Props = {
+    id: string;
+    title: string,
+    taskList: Task[]
+    onAddTask: (title:string, desc:string) => void
+    onDeleteTask: (taskId: string) => void; // Expects an ID
+    onChangeTaskId: (id: string, listId:string) => void;
+    onHover: (taskId: string, before: boolean) => void;
+    onDragStartTask: (taskId: string) => void;
+    onDragEndTask: () => void;
+}
+//
+// const handleDragStart = (e: React.DragEvent) => {
+//     // We use the ID of the element to know what to move
+//     e.dataTransfer.setData("text/plain", "e");
+//     e.dataTransfer.effectAllowed = "move";
 // };
 
-type Props = {
-  taskList: TaskListType;
-  taskArr: Task[];
+// Handler for the Drop Zone
 
-  onAddTask: (title: string, desc: string) => void;
-  onDeleteTask: (taskId: string) => void;
-  onTaskListClick: (taskId: string) => void;
-  onChangeTaskPosition: (id: string, listId: string) => void; // Renamed for clarity
-  onHover: (taskId: string, before: boolean) => void;
-  onListHover: (listId: string) => void; // New prop for empty lists
-  onDragStartTask: (taskId: string) => void;
-  onDragEndTask: () => void;
-  onTaskClick: (taskId: string) => void;
-  onToggleComplete: (taskId: string, isCompleted: boolean) => void;
-};
 
-function TaskList({
-  taskList,
-  taskArr,
-  onAddTask,
-  onDeleteTask,
-  onChangeTaskPosition,
-  onHover,
-  onListHover,
-  onDragStartTask,
-  onDragEndTask,
-  onTaskClick,
-  onTaskListClick,
-  onToggleComplete,
-}: Props) {
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    console.log("Length of list is: " + taskArr.length);
-    // If the list is empty, tell the parent to show the placeholder!
-    // if (taskList.length === 0) {
-    //     onListHover(id);
-    // }
+function TaskList({id, title, taskList, onAddTask, onDeleteTask, onChangeTaskId, onHover, onDragStartTask, onDragEndTask}:Props) {
+    // const handleDragOver = (e: React.DragEvent) => {
+    //     // CRITICAL: This allows the drop to happen
+    //     e.preventDefault();
+    //     e.dataTransfer.dropEffect = "move";
+    //     const data = e.dataTransfer.getData("text/plain");
+    //     console.log("Dragged over: ", data);
+    // };
+    //
+    // const handleDrop = (e: React.DragEvent) => {
+    //     e.preventDefault();
+    //     const data = e.dataTransfer.getData("text/plain");
+    //
+    //     // In a real app, you would update state here!
+    //     console.log("Dropped:", data);
+    //     console.log("Dropped in list with id: ", id);
+    //     onChangeTaskId(data, id);
+    // };
 
-    // If the list is empty, anywhere is a valid drop zone to append
-    if (taskArr.length === 0) {
-      onListHover(taskList.id);
-      return;
-    }
+    // 3. Simplify drag over (just needs to prevent default to allow dropping)
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+    };
 
-    // PREVENT GAP FLICKER:
-    // The .task-box has a gap: 10px in CSS. If the mouse hits that gap,
-    // it bubbles to this list. We ignore it so the ghost stays in place!
-    const target = e.target as HTMLElement;
-    if (target.classList.contains("task-box")) {
-      return;
-    }
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        const data = e.dataTransfer.getData("text/plain");
 
-    onListHover(taskList.id);
-  };
+        console.log("Dropped task ID:", data, "into list:", id);
+        onChangeTaskId(data, id);
+    };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const data = e.dataTransfer.getData("text/plain");
+    return(
+        <div className={"task-list"} onDragOver={handleDragOver} onDrop={handleDrop}>
+            <h2>{title}</h2>
+            <div className={"task-box"}>
 
-    onChangeTaskPosition(data, taskList.id);
-  };
+                {taskList.map( (task) => (
+                    <TaskComponent
+                        key = {task.id}
+                        id={task.id}
+                        title={task.title}
+                        description={task.description}
+                        isGhost={task.isGhost}
+                        onDeleteTask={onDeleteTask}
+                        onHover={onHover}
+                        onDragStartTask={onDragStartTask}
+                        onDragEndTask={onDragEndTask}
 
-  const { theme } = useContext(ThemeContext);
-  const listColor = taskList.color || "#9339c6";
-  const taskBgColor =
-    theme === "dark"
-      ? adjustColorBrightness(listColor, -50)
-      : adjustColorBrightness(listColor, 60);
 
-  return (
-    <div
-      // className={`task-list`}
-      className={`task-list bg-[${listColor}]`}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-      style={{ backgroundColor: listColor }}
-    >
-      <h2
-        className={"task-list-h2"}
-        onClick={() => onTaskListClick(taskList.id)}
-      >
-        {taskList.title}
-      </h2>
-      <span onClick={(e) => e.stopPropagation()}></span>
-      {/* Added minHeight so empty lists have a physical drop zone! */}
-      <div className={"task-box"} style={{ minHeight: "50px" }}>
-        {taskArr.map((task) => (
-          <TaskComponent
-            key={task.id}
-            task={task}
-            onDeleteTask={onDeleteTask}
-            onHover={onHover}
-            onDragStartTask={onDragStartTask}
-            onDragEndTask={onDragEndTask}
-            onClick={() => onTaskClick(task.id)}
-            onToggleComplete={onToggleComplete}
-            baseColor={listColor}
-            taskColor={taskBgColor}
-          />
-        ))}
-      </div>
-      <AddTask onAddTask={onAddTask} />
-    </div>
-  );
+                />))}
+
+            </div>
+            <AddTask onAddTask={onAddTask}/>
+        </div>
+    )
 }
 
 export default TaskList;
+
