@@ -8,38 +8,43 @@ import {
   Patch,
 } from '@nestjs/common';
 import { PartialType } from '@nestjs/mapped-types';
+import { TasksService } from "./tasks.service";
 
 
-  class CreateTaskDto {
+class CreateTaskDto {
   id: string;
   listId: string;
   title: string;
   description: string;
+  position: number;
 }
 
-class UpdateTaskListDto extends PartialType(CreateTaskDto) {
+class UpdateTaskDto extends PartialType(CreateTaskDto) {
 
 }
 
 @Controller('tasks')
 export class TasksController {
+  constructor(private tasksService: TasksService) {}
+
   // A temporary in-memory database (just like your React state)
-  private tasks: CreateTaskDto[] = [
-
-      {id:crypto.randomUUID(), listId: "1", title: "Card 1", description: "This is card 1"},
-      {id:crypto.randomUUID(), listId: "2", title:"Card 2", description:"This is card 2"},
-      {id:crypto.randomUUID(), listId: "2", title:"Card 1", description:"This is card 1"},
-      {id:crypto.randomUUID(), listId: "3", title: "Card 2", description:"This is card 2"}
-
-  ];
+  // private tasks: CreateTaskDto[] = [
+  //
+  //     {id:crypto.randomUUID(), listId: "1", title: "Card 1", description: "This is card 1"},
+  //     {id:crypto.randomUUID(), listId: "2", title:"Card 2", description:"This is card 2"},
+  //     {id:crypto.randomUUID(), listId: "2", title:"Card 1", description:"This is card 1"},
+  //     {id:crypto.randomUUID(), listId: "3", title: "Card 2", description:"This is card 2"}
+  //
+  // ];
 
   // ----------------------------------------------------
   // GET Endpoint: Fetch all tasks
   // URL: GET http://localhost:3000/tasks
   // ----------------------------------------------------
   @Get()
-  getAllTasks(): CreateTaskDto[] {
-    return this.tasks;
+  async getAllTasks() {
+    // Fetch all tasks, ordered by their position!
+    return this.tasksService.getAllTasks();
   }
 
   // ----------------------------------------------------
@@ -47,34 +52,23 @@ export class TasksController {
   // URL: POST http://localhost:3000/tasks
   // ----------------------------------------------------
   @Post()
-  createTask(@Body() newTask: CreateTaskDto): CreateTaskDto {
-    // @Body() automatically parses the incoming JSON from the request!
-    this.tasks.push(newTask);
-
-    // We return the task back so the frontend knows it saved successfully
-    return newTask;
+  async createTask(@Body() body: { title: string; description: string; listId: string }) {
+    return this.tasksService.createTask(body.title, body.description, body.listId);
   }
 
   @Delete('/:id')
-  deleteTask(@Param('id') id: string): any {
-    this.tasks = this.tasks.filter((task) => task.id !== id);
-    return this.tasks;
+  async deleteTask(@Param('id') id: string): Promise<CreateTaskDto> {
+    return this.tasksService.deleteTask(id);
   }
 
   @Patch('/:id')
-  patchTask(@Param('id') id: string, @Body() sentList: UpdateTaskListDto): any {
-    const foundTask = this.tasks.find((list) => list.id === id);
-    if (!foundTask) {
-      return;
-    }
-
-    if (sentList.listId) foundTask.listId = sentList.listId;
-    if (sentList.title) foundTask.title = sentList.title;
-    if (sentList.description) foundTask.description = sentList.description;
-    return foundTask;
+  async patchTask(
+      @Param('id') id: string,
+      @Body() sentTask: UpdateTaskDto): Promise<UpdateTaskDto> {
+    return this.tasksService.patchTask(id, sentTask);
   }
   @Get('/:id')
-  getTask(@Param('id') id: string): any {
-    return this.tasks.find((task) => task.id === id);
+  async getTask(@Param('id') id: string): Promise<any>{
+    return this.tasksService.getTaskById(id);
   }
 }
