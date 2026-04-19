@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TasksController } from './tasks/tasks.controller'; // 1. Import your new file
-import { ListsController } from './lists/lists.controller';
 import { TasksModule } from './tasks/tasks.module';
-import { PrismaService } from './prisma/prisma.service';
+import { ListsModule } from './lists/lists.module';
 
 @Module({
-  imports: [TasksModule],
-  controllers: [AppController, TasksController, ListsController],
-  providers: [AppService, PrismaService],
+  // 1. Import the departments here
+  imports: [TasksModule, ListsModule],
+  // 2. Only register the App's own root controller
+  controllers: [AppController],
+  // 3. Only register the App's own root service
+  providers: [AppService],
 })
 export class AppModule {}

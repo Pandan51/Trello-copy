@@ -7,8 +7,8 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { PartialType } from '@nestjs/mapped-types';
+import { ListsService } from './lists.service';
 
 class CreateTaskListDto {
   id: string;
@@ -19,54 +19,28 @@ class UpdateTaskListDto extends PartialType(CreateTaskListDto) {}
 
 @Controller('lists')
 export class ListsController {
-  constructor(private prisma: PrismaService) {}
-
-  private lists: CreateTaskListDto[] = [
-    {
-      title: "Todo",
-      id: "1",
-
-    },
-    {
-      title: "In progress",
-      id: "2",
-
-    },
-    {
-      title: "Done",
-      id: "3",
-    }
-  ];
+  constructor(private listsService: ListsService) {}
 
   @Get()
   async getAllLists() {
-    return this.prisma.taskList.findMany();
+    return this.listsService.getAllLists();
   }
 
   @Post()
   async createList(@Body() body: { title: string }) {
-    // Save a new list to the database
-    return this.prisma.taskList.create({
-      data: {
-        title: body.title,
-      },
-    });
+    // Hand the incoming data to the Chef
+    return this.listsService.createList(body.title);
   }
 
   @Delete('/:id')
-  deleteList(@Param('id') id: string): any {
-    this.lists = this.lists.filter((list) => list.id !== id);
-    return this.lists;
+  async deleteList(@Param('id') id: string): Promise<CreateTaskListDto> {
+    return this.listsService.deleteList(id);
   }
 
   @Patch('/:id')
-  patchList(@Param('id') id: string, @Body() task: UpdateTaskListDto): any {
-    const foundList = this.lists.find((list) => list.id === id);
-    if (!foundList) {
-      return;
-    }
-
-    Object.assign(foundList, task);
-    return foundList;
+  async patchList(
+      @Param('id') id: string,
+      @Body() sentList: UpdateTaskListDto): Promise<any> {
+    return this.listsService.patchList(id, sentList);
   }
 }
