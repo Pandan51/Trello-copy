@@ -5,7 +5,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  //  output   = "../generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -16,21 +16,21 @@ datasource db {
 // --- YOUR TABLES ---
 
 model List {
-  id    String @id @default(uuid()) // Automatically generates the UUID!
-  title String
-  tasks Task[] // Tells Prisma: "One list has many tasks"
-  color String @default("#9339C6") // Default to purple
+  id        String   @id @default(uuid()) // Automatically generates the UUID!
+  title     String
+  tasks     Task[]   // Tells Prisma: "One list has many tasks"
 }
 
 model Task {
-  id          String  @id @default(uuid())
+  id          String   @id @default(uuid())
   title       String
   description String
   // Phase 2: The magic Trello sorting column!
-  position    String  @default("a")
-  completed   Boolean @default(false)
+  position    Int      @default(0)
 
   // The Foreign Key relationship
-  listId String
-  list   List   @relation(fields: [listId], references: [id])
+  listId      String
+  list        List     @relation(fields: [listId], references: [id])
 }
+
+

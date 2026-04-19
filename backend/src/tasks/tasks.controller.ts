@@ -25,12 +25,12 @@ class UpdateTaskListDto extends PartialType(CreateTaskDto) {
 export class TasksController {
   // A temporary in-memory database (just like your React state)
   private tasks: CreateTaskDto[] = [
-    {
-      id: '123',
-      listId: 'todo-list',
-      title: 'Learn NestJS',
-      description: 'Build my first endpoint',
-    },
+
+      {id:crypto.randomUUID(), listId: "1", title: "Card 1", description: "This is card 1"},
+      {id:crypto.randomUUID(), listId: "2", title:"Card 2", description:"This is card 2"},
+      {id:crypto.randomUUID(), listId: "2", title:"Card 1", description:"This is card 1"},
+      {id:crypto.randomUUID(), listId: "3", title: "Card 2", description:"This is card 2"}
+
   ];
 
   // ----------------------------------------------------
