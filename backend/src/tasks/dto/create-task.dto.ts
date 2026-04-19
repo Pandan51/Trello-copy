@@ -1,31 +1,13 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { IsString, IsNotEmpty, IsOptional, IsBoolean } from 'class-validator';
+import {PartialType} from "@nestjs/mapped-types";
 
 export class CreateTaskDto {
-  @IsString()
-  @IsNotEmpty()
-  id: string;
-
-  @IsString()
-  @IsNotEmpty()
-  listId: string;
-
-  @IsString()
-  @IsNotEmpty()
-  title: string;
-
-  @IsString()
-  @IsOptional()
-  description: string;
-
-  // This guarantees the frontend can no longer send integers!
-  @IsString()
-  @IsNotEmpty()
-  position: string;
-
-  @IsOptional()
-  @IsBoolean()
-  completed?: boolean;
+    id: string;
+    listId: string;
+    title: string;
+    description: string;
+    position: number;
 }
 
-export class UpdateTaskDto extends PartialType(CreateTaskDto) {}
+export class UpdateTaskDto extends PartialType(CreateTaskDto) {
+
+}
