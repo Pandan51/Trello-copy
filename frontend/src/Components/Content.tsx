@@ -1,6 +1,6 @@
 // import { TodoList } from "../models/TodoList";
 import AddList from "./AddList.tsx";
-import {useMemo, useState} from "react";
+import {useMemo, useState, useEffect } from "react";
 // import { Task } from "../models/Task";
 import TaskList from "./TaskList.tsx";
 
@@ -9,6 +9,7 @@ type Task = {
     listId: string;
     title: string;
     description: string;
+    position: number;
 }
 
 type TaskList = {
@@ -26,30 +27,27 @@ type TaskMap = {
 function Content() {
 
     const [taskList, setTaskList] = useState<TaskList[]>([
-        {
-            title: "Todo",
-            id: crypto.randomUUID(),
-
-        },
-        {
-            title: "In progress",
-            id: crypto.randomUUID(),
-
-        },
-        {
-            title: "Done",
-            id: crypto.randomUUID()
-        }]);
-
-    const response = await fetch("http://localhost:3000/lists");
-
-    setTaskList([response, ...taskList]);
+        // {
+        //     title: "Todo",
+        //     id: crypto.randomUUID(),
+        //
+        // },
+        // {
+        //     title: "In progress",
+        //     id: crypto.randomUUID(),
+        //
+        // },
+        // {
+        //     title: "Done",
+        //     id: crypto.randomUUID()
+        // }
+        ]);
 
     const [tasks, setTasks] = useState<Task[]>([
-        {id:crypto.randomUUID(), listId: taskList[0].id, title: "Card 1", description: "This is card 1"},
-        {id:crypto.randomUUID(), listId: taskList[0].id, title:"Card 2", description:"This is card 2"},
-        {id:crypto.randomUUID(), listId: taskList[1].id, title:"Card 1", description:"This is card 1"},
-        {id:crypto.randomUUID(), listId: taskList[2].id, title: "Card 2", description:"This is card 2"}
+        // {id:crypto.randomUUID(), listId: taskList[0].id, title: "Card 1", description: "This is card 1"},
+        // {id:crypto.randomUUID(), listId: taskList[0].id, title:"Card 2", description:"This is card 2"},
+        // {id:crypto.randomUUID(), listId: taskList[1].id, title:"Card 1", description:"This is card 1"},
+        // {id:crypto.randomUUID(), listId: taskList[2].id, title: "Card 2", description:"This is card 2"}
     ]);
 
     const groupedTasks: TaskMap = useMemo(()=>
@@ -60,6 +58,19 @@ function Content() {
 
         }, {} as TaskMap),
         [tasks]);
+
+    useEffect(() => {
+        // Fetch both Lists and Tasks from your two separate controllers
+        Promise.all([
+            fetch('http://localhost:3000/lists').then(res => res.json()),
+            fetch('http://localhost:3000/tasks').then(res => res.json())
+        ])
+            .then(([fetchedLists, fetchedTasks]:[TaskList[], Task[]]) => {
+                setTaskList(fetchedLists);
+                setTasks(fetchedTasks);
+            })
+            .catch(err => console.error("Failed to load data:", err));
+    }, []);
 
     // Currently dragged task
     const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
