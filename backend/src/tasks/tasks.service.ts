@@ -21,13 +21,13 @@ export class TasksService {
         });
     }
 
-    async createTask(title: string, description: string, listId: string): Promise<CreateTaskDto> {
+    async createTask(title: string, description: string, listId: string, position: number): Promise<CreateTaskDto> {
         return this.prisma.task.create({
             data: {
                 title: title,
                 description: description,
                 listId: listId,
-                position: 0,
+                position: position,
             },
         });
     }

@@ -9,13 +9,14 @@ type Props = {
     onHover: (taskId: string, before: boolean) => void;
     onDragStartTask: (taskId: string) => void;
     onDragEndTask: () => void;
+    onClick: ()=>void;
 }
 
 
 
 function TaskComponent({
                            id, title, description, isGhost,
-                           onDeleteTask, onHover, onDragStartTask, onDragEndTask
+                           onDeleteTask, onHover, onDragStartTask, onDragEndTask, onClick
                        }: Props) {
 
     // 1. THE GHOST RENDER
@@ -71,7 +72,7 @@ function TaskComponent({
     };
 
     return (
-        <div
+        <div onClick={onClick}
             className="task"
             draggable="true"
             onDragStart={handleDragStart}
@@ -80,53 +81,13 @@ function TaskComponent({
             style={{ cursor: 'grab' }} // Optional UI polish
         >
             <h3>{title}</h3>
-            {/* Make sure DeleteTask is imported and works as expected */}
-            <DeleteTask onDeleteTask={() => onDeleteTask(id)} />
+            {/* Wrap the delete component in a span that stops the click event from bubbling up to the dialog */}
+            <span onClick={(e) => e.stopPropagation()}>
+                <DeleteTask onDeleteTask={() => onDeleteTask(id)} />
+            </span>
             <p>{description}</p>
         </div>
     );
-
-    //
-    // const handleDragStart = (e: React.DragEvent) => {
-    //     const img = new Image();
-    //     img.src = "/droid.png";
-    //     img.height = 2000;
-    //     img.width = 2000;
-    //
-    //     // We use the ID of the element to know what to move
-    //     e.dataTransfer.setData("text/plain", id);
-    //     e.dataTransfer.effectAllowed = "move";
-    //     e.dataTransfer.setDragImage(img, 10, 10);
-    //
-    //     console.log("Element picked up");
-    //     console.log(e);
-    // };
-    //
-    // const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    //     e.preventDefault(); // You MUST have this uncommented to allow dropping!
-    //     e.dataTransfer.dropEffect = "move";
-    //
-    //     // 1. Get the math
-    //     const rect = e.currentTarget.getBoundingClientRect();
-    //     const middleY = rect.top + (rect.height / 2);
-    //
-    //     // 2. Report back to the parent
-    //     if (e.clientY < middleY) {
-    //         onHover(id, true);
-    //     } else {
-    //         onHover(id, false);
-    //     }
-    // };
-
-    //
-    //
-    // return (
-    //     <div className={"task"} key={id} draggable="true" onDragStart={handleDragStart} onDragOver={handleDragOver}>
-    //         <h3>{title}</h3>
-    //         <DeleteTask onDeleteTask={() => onDeleteTask(id)} />
-    //         <p>{description}</p>
-    //     </div>
-    // )
 }
 
 export default TaskComponent;

@@ -52,8 +52,8 @@ export class TasksController {
   // URL: POST http://localhost:3000/tasks
   // ----------------------------------------------------
   @Post()
-  async createTask(@Body() body: { title: string; description: string; listId: string }) {
-    return this.tasksService.createTask(body.title, body.description, body.listId);
+  async createTask(@Body() body: { title: string; description: string; listId: string, position: number }) {
+    return this.tasksService.createTask(body.title, body.description, body.listId, body.position);
   }
 
   @Delete('/:id')
