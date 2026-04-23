@@ -13,7 +13,11 @@ function AddList({onAddList}: Props) {
             <form>
                 <label htmlFor="title">Title</label>
                 <input type="text" id="fname" name="title" value={inputTitle} onChange={(e)=>setInputTitle(e.target.value)}/>
-                <button type="button" onClick={()=>onAddList(inputTitle)}>Add List</button>
+                <button type="button" onClick={()=> {
+                    onAddList(inputTitle)
+                    setInputTitle("");
+                }
+                }>Add List</button>
             </form>
         </div>
     )

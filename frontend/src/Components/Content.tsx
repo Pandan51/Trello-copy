@@ -1,8 +1,9 @@
 import AddList from "./AddList.tsx";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useOptimistic, startTransition } from "react";
 import TaskList from "./TaskList.tsx";
 import TaskDialog from "./TaskDialog.tsx";
 import TaskListDialog from "./TaskListDialog.tsx";
+
 
 type Task = {
     id: string;
@@ -62,8 +63,11 @@ function Content() {
 
     useEffect(() => {
         Promise.all([
-            fetch('http://localhost:3000/lists').then(res => res.json()),
-            fetch('http://localhost:3000/tasks').then(res => res.json())
+            // fetch('http://localhost:3000/lists').then(res => res.json()),
+            getTasks(),
+            // fetchTasks().then(res => res.json()),
+            getLists()
+            // fetch('http://localhost:3000/tasks').then(res => res.json())
         ])
             .then(([fetchedLists, fetchedTasks]) => {
                 setTaskLists(fetchedLists);
@@ -71,6 +75,13 @@ function Content() {
             })
             .catch(err => console.error("Failed to load data:", err));
     }, []);
+
+    async function getTasks() {
+        return fetch('http://localhost:3000/lists').then(res => res.json())
+    }
+    async function getLists() {
+        return fetch('http://localhost:3000/tasks').then(res => res.json())
+    }
 
     const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
     const [placeholder, setPlaceholder] = useState<{ listId: string, index: number } | null>(null);
@@ -88,27 +99,6 @@ function Content() {
             }
         } catch (err) {
             console.error("Failed to add list:", err);
-        }
-    }
-
-    async function updateListDetails(listId: string, title: string) {
-        if(listId === null || listId === undefined || listId === "") {
-
-        }
-        const listIndex: number  = taskLists.findIndex((item)=> item.id === listId);
-        if (listIndex === -1){ return; }
-
-        taskLists[listIndex].title = title;
-
-        // Background server update
-        try {
-            await fetch(`http://localhost:3000/lists/${listId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: title})
-            });
-        } catch (err) {
-            console.error("Failed to update task details:", err);
         }
     }
 
@@ -195,16 +185,60 @@ function Content() {
 
     async function updateTaskListDetails(taskListId: string, newTitle: string) {
         // Optimistic UI update
+        if(taskListId === null || taskListId === undefined || taskListId === "") { return;}
+
+        const tempList: TaskListType = taskLists.find(
+            (list)=> taskListId == list.id);
+
         setTaskLists(prev => prev.map(t =>
             t.id === taskListId ? { ...t, title: newTitle } : t
         ));
 
         // Background server update
         try {
-            await fetch(`http://localhost:3000/lists/${taskListId}`, {
+            // await fetch(`http://localhost:3000/lists/${taskListId}`, {
+            //     method: 'PATCH',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify({ title: newTitle })
+            // });
+            await testUpdateFetch(taskListId, newTitle);
+        } catch (err) {
+            console.error("Failed to update task details:", err);
+            // Should revert to old one on error
+            // setTaskLists(prev => prev.map(t =>
+            //     t.id === tempList.id ? tempList : t
+            // ));
+            // const newList = await getLists();
+            // setTaskLists(await getLists());
+
+        }
+    }
+
+    // Test function used to fetching error rollback
+    async function testUpdateFetch(taskListId: string, newTitle: string) {
+        await fetch(`http://localhost:3000/lists/${taskListId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: { newTitle: newTitle } })
+        });
+    }
+
+    // Not used yet
+    async function updateListDetails(listId: string, title: string) {
+        if(listId === null || listId === undefined || listId === "") {
+
+        }
+        const listIndex: number  = taskLists.findIndex((item)=> item.id === listId);
+        if (listIndex === -1){ return; }
+
+        taskLists[listIndex].title = title;
+
+        // Background server update
+        try {
+            await fetch(`http://localhost:3000/lists/${listId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: newTitle })
+                body: JSON.stringify({ title: title})
             });
         } catch (err) {
             console.error("Failed to update task details:", err);
