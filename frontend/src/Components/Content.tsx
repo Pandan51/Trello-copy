@@ -1,6 +1,8 @@
 import AddList from "./AddList.tsx";
-import {useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import TaskList from "./TaskList.tsx";
+import TaskDialog from "./TaskDialog.tsx";
+import TaskListDialog from "./TaskListDialog.tsx";
 
 type Task = {
     id: string;
@@ -20,50 +22,60 @@ type TaskMap = {
     [key: string]: Task[];
 };
 
+// --- HELPER FUNCTION: Keeps our component code clean! ---
+// Calculates the exact middle position between any two cards
+function calculateNewPosition(targetList: Task[], insertIndex: number): number {
+    if (targetList.length === 0) return 1024; // Empty list
+    if (insertIndex <= 0) return targetList[0].position / 2; // Top of list
+    if (insertIndex >= targetList.length) return targetList[targetList.length - 1].position + 1024; // Bottom of list
+
+    // Exactly between two cards
+    const posAbove = targetList[insertIndex - 1].position;
+    const posBelow = targetList[insertIndex].position;
+    return (posAbove + posBelow) / 2;
+}
+
 function Content() {
-    const [taskList, setTaskList] = useState<TaskListType[]>([]);
+    // Current lists
+    const [taskLists, setTaskLists] = useState<TaskListType[]>([]);
+    // Current tasks
     const [tasks, setTasks] = useState<Task[]>([]);
 
-    const groupedTasks: TaskMap = useMemo(()=> {
-        const map = tasks.reduce((acc: TaskMap, val: Task)=> {
-            if(!acc[val.listId]){acc[val.listId] = [];}
+    const [activeList, setActiveList] = useState<TaskListType | null>(null);
+    const [activeTask, setActiveTask] = useState<Task | null>(null)
+
+    // Grouped tasks by listId cached using memo
+    const groupedTasks: TaskMap = useMemo(() => {
+        const map = tasks.reduce((acc: TaskMap, val: Task) => {
+            if (!acc[val.listId]) { acc[val.listId] = []; }
             acc[val.listId].push(val);
             return acc;
         }, {} as TaskMap);
 
-        // Ensure tasks inside each list are sorted by their position!
+        // Crucial: Sort all lists visually by their new DB position number
         Object.keys(map).forEach(key => {
             map[key].sort((a, b) => a.position - b.position);
         });
+
         return map;
     }, [tasks]);
 
     useEffect(() => {
-        // Fetch both Lists and Tasks from your backend controllers
         Promise.all([
             fetch('http://localhost:3000/lists').then(res => res.json()),
             fetch('http://localhost:3000/tasks').then(res => res.json())
         ])
             .then(([fetchedLists, fetchedTasks]) => {
-                setTaskList(fetchedLists);
+                setTaskLists(fetchedLists);
                 setTasks(fetchedTasks);
             })
             .catch(err => console.error("Failed to load data:", err));
     }, []);
 
-    // Currently dragged task
     const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
-
-    // We need to know which list the mouse is over, and exactly what index to put the placeholder
     const [placeholder, setPlaceholder] = useState<{ listId: string, index: number } | null>(null);
 
-    function taskById(id: string): Task | undefined{
-        const index = tasks.findIndex(task => task.id === id);
-
-        return index >= 0 ? tasks[index] : undefined;
-    }
-
-    async function addNewList(title:string){
+    async function addNewList(title: string) {
         try {
             const response = await fetch('http://localhost:3000/lists', {
                 method: 'POST',
@@ -72,15 +84,36 @@ function Content() {
             });
             if (response.ok) {
                 const newList = await response.json();
-                setTaskList([...taskList, newList]);
+                setTaskLists([...taskLists, newList]);
             }
         } catch (err) {
             console.error("Failed to add list:", err);
         }
     }
 
-    async function addNewTask(title:string, desc:string, listId: string){
-        // Calculate a new position for the task (at the bottom of the list)
+    async function updateListDetails(listId: string, title: string) {
+        if(listId === null || listId === undefined || listId === "") {
+
+        }
+        const listIndex: number  = taskLists.findIndex((item)=> item.id === listId);
+        if (listIndex === -1){ return; }
+
+        taskLists[listIndex].title = title;
+
+        // Background server update
+        try {
+            await fetch(`http://localhost:3000/lists/${listId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: title})
+            });
+        } catch (err) {
+            console.error("Failed to update task details:", err);
+        }
+    }
+
+    async function addNewTask(title: string, desc: string, listId: string) {
+        // Position Math: Bottom of the list gets current Max + 1024
         const tasksInList = groupedTasks[listId] || [];
         const maxPos = tasksInList.length > 0 ? tasksInList[tasksInList.length - 1].position : 0;
         const newPos = maxPos + 1024;
@@ -100,79 +133,81 @@ function Content() {
         }
     }
 
-    async function deleteTask(taskId:string){
-        // Optimistic UI update
+    async function deleteTask(taskId: string) {
         setTasks(prev => prev.filter(task => task.id !== taskId));
-
-        // Background server update
         try {
-            await fetch(`http://localhost:3000/tasks/${taskId}`, {
-                method: 'DELETE'
-            });
+            await fetch(`http://localhost:3000/tasks/${taskId}`, { method: 'DELETE' });
         } catch (err) {
             console.error("Failed to delete task:", err);
         }
     }
 
-    async function changeTaskId(taskId: string, listId: string) {
-        let newPos = 0; // We will calculate this using fractional indexing
-        let updatedTaskCopy: Task | null = null;
+    async function changeTaskPosition(taskId: string, listId: string) {
+        let newPos = 0;
 
         setTasks(prevTasks => {
-            // 1. Find the task we are moving
             const taskToMove = prevTasks.find(t => t.id === taskId);
             if (!taskToMove) return prevTasks;
 
-            // 2. Create a new array WITHOUT the dragged task
-            let newTasks = prevTasks.filter(t => t.id !== taskId);
+            const newTasks = prevTasks.filter(t => t.id !== taskId);
+            const targetList = newTasks.filter(t => t.listId === listId).sort((a,b) => a.position - b.position);
 
-            // 3. Get the other tasks currently in the target list (sorted by position)
-            const tasksInTargetList = newTasks.filter(t => t.listId === listId).sort((a,b) => a.position - b.position);
+            const insertIndex = (placeholder && placeholder.listId === listId) ? placeholder.index : targetList.length;
 
-            let insertIndex = tasksInTargetList.length;
-            if (placeholder && placeholder.listId === listId) {
-                insertIndex = placeholder.index;
-            }
+            // Use our new clean helper function!
+            newPos = calculateNewPosition(targetList, insertIndex);
 
-            // --- FRACTIONAL INDEXING MATH ---
-            if (tasksInTargetList.length === 0) {
-                // Dropped into an empty list
-                newPos = 1024;
-            } else if (insertIndex <= 0) {
-                // Dropped at the very top
-                newPos = tasksInTargetList[0].position / 2;
-            } else if (insertIndex >= tasksInTargetList.length) {
-                // Dropped at the very bottom
-                newPos = tasksInTargetList[tasksInTargetList.length - 1].position + 1024;
-            } else {
-                // Dropped exactly in the middle of two cards
-                const posAbove = tasksInTargetList[insertIndex - 1].position;
-                const posBelow = tasksInTargetList[insertIndex].position;
-                newPos = (posAbove + posBelow) / 2;
-            }
-
-            // 4. Create a copy of the task with the updated listId and new position
-            updatedTaskCopy = { ...taskToMove, listId: listId, position: newPos };
-
-            // Push it to the state array
-            newTasks.push(updatedTaskCopy);
-            return newTasks;
+            // Return the new array with the updated task appended
+            return [...newTasks, { ...taskToMove, listId, position: newPos }];
         });
 
-        // 5. Instantly clean up the UI states
         handleDragEnd();
 
-        // 6. Send PATCH to background
-        if (updatedTaskCopy) {
-            try {
-                await fetch(`http://localhost:3000/tasks/${taskId}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ listId: listId, position: newPos })
-                });
-            } catch (err) {
-                console.error("Failed to move task:", err);
-            }
+        // The bug fix: explicitly send ONLY listId and position without extra wrapping objects!
+        try {
+            await fetch(`http://localhost:3000/tasks/${taskId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ listId: listId, position: newPos })
+            });
+        } catch (err) {
+            console.error("Failed to move task:", err);
+        }
+    }
+
+    async function updateTaskDetails(taskId: string, newTitle: string, newDescription: string) {
+        // Optimistic UI update
+        setTasks(prev => prev.map(t =>
+            t.id === taskId ? { ...t, title: newTitle, description: newDescription } : t
+        ));
+
+        // Background server update
+        try {
+            await fetch(`http://localhost:3000/tasks/${taskId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: newTitle, description: newDescription })
+            });
+        } catch (err) {
+            console.error("Failed to update task details:", err);
+        }
+    }
+
+    async function updateTaskListDetails(taskListId: string, newTitle: string) {
+        // Optimistic UI update
+        setTaskLists(prev => prev.map(t =>
+            t.id === taskListId ? { ...t, title: newTitle } : t
+        ));
+
+        // Background server update
+        try {
+            await fetch(`http://localhost:3000/lists/${taskListId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: newTitle })
+            });
+        } catch (err) {
+            console.error("Failed to update task details:", err);
         }
     }
 
@@ -200,29 +235,29 @@ function Content() {
         });
     }
 
+    // New failsafe for dragging over an empty list
+    function handleListHover(listId: string) {
+        setPlaceholder(prev => {
+            if (prev?.listId === listId && prev?.index === 0) return prev;
+            return { listId, index: 0 };
+        });
+    }
+
     return (
         <div className="task-container">
-            {taskList.map((item) => {
-                // 1. Get the real tasks for this column
+            {taskLists.map((item) => {
                 let renderTasks = [...(groupedTasks[item.id] ?? [])];
 
-                // 2. If we are actively dragging something...
-                if (draggedTaskId) {
-                    // 3. If the mouse is hovering over THIS specific column...
-                    if (placeholder && placeholder.listId === item.id) {
-                        // Create the fake task
-                        const ghostTask = {
-                            id: "ghost-placeholder",
-                            listId: item.id,
-                            title: "",
-                            description: "",
-                            position: 0,
-                            isGhost: true // A special flag we will use in TaskComponent
-                        };
-
-                        // Inject the ghost at the calculated index!
-                        renderTasks.splice(placeholder.index, 0, ghostTask as any);
-                    }
+                if (draggedTaskId && placeholder && placeholder.listId === item.id) {
+                    const ghostTask = {
+                        id: "ghost-placeholder",
+                        listId: item.id,
+                        title: "",
+                        description: "",
+                        position: 0,
+                        isGhost: true
+                    };
+                    renderTasks.splice(placeholder.index, 0, ghostTask as any);
                 }
 
                 return (
@@ -231,16 +266,43 @@ function Content() {
                         id={item.id}
                         title={item.title}
                         taskList={renderTasks}
-                        onAddTask={(title: string, desc: string) => addNewTask(title, desc, item.id)}
+                        onTaskListClick={(listId:string)=> {
+                            const list = taskLists.find(l => l.id === listId);
+                            if (list) setActiveList(list);
+                        }}
+                        onTaskClick={(taskId: string) => {
+                            const task = tasks.find(t => t.id === taskId);
+                            if (task) setActiveTask(task);
+                        }}
+                        onAddTask={(title, desc) => addNewTask(title, desc, item.id)}
                         onDeleteTask={deleteTask}
-                        onChangeTaskId={changeTaskId}
+                        onChangeTaskPosition={changeTaskPosition}
                         onHover={(taskId: string, before: boolean) => handleTaskHover(taskId, before, item.id)}
+                        onListHover={handleListHover}
                         onDragStartTask={handleDragStartTask}
                         onDragEndTask={handleDragEnd}
                     />
                 );
             })}
             <AddList onAddList={addNewList}/>
+
+            {/* Render the native dialog if there is an active task selected */}
+            {activeTask && (
+                <TaskDialog
+                    task={activeTask}
+                    onClose={() => setActiveTask(null)}
+                    onSave={updateTaskDetails}
+                />
+            )}
+
+            {/* Render the native dialog if there is an active task selected */}
+            {activeList && (
+                <TaskListDialog
+                    list={activeList}
+                    onClose={() => setActiveList(null)}
+                    onSave={updateTaskListDetails}
+                />
+            )}
         </div>
     )
 }

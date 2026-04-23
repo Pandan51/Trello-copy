@@ -28,7 +28,7 @@ function AddTask({onAddTask}: Props) {
                     setInputTitle("");
                     setInputDesc("");
                 }
-                }>Add List</button>
+                }>Add task</button>
             </form>
         </div>
     )

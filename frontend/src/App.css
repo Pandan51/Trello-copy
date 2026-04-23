@@ -61,6 +61,9 @@
     background-color: #9339C6;
     flex-direction: column;
 }
+.task-list-h2{
+    height: 28px;
+}
 
 .task{
     background-color: #C69339;
