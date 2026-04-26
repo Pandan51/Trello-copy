@@ -45,6 +45,18 @@ function Content() {
     const [activeList, setActiveList] = useState<TaskListType | null>(null);
     const [activeTask, setActiveTask] = useState<Task | null>(null)
 
+    // Optimistic UI states
+    const [optimisticTaskLists, addOptimisticListUpdate] = useOptimistic(
+        taskLists, // The source of truth
+        (currentLists, optimisticUpdate: { id: string, title: string }) => {
+            // How to modify the list temporarily
+            return currentLists.map(list =>
+                list.id === optimisticUpdate.id ? { ...list, title: optimisticUpdate.title } : list
+            );
+        }
+    );
+
+
     // Grouped tasks by listId cached using memo
     const groupedTasks: TaskMap = useMemo(() => {
         const map = tasks.reduce((acc: TaskMap, val: Task) => {
@@ -187,64 +199,44 @@ function Content() {
         // Optimistic UI update
         if(taskListId === null || taskListId === undefined || taskListId === "") { return;}
 
-        const tempList: TaskListType = taskLists.find(
-            (list)=> taskListId == list.id);
+        // 1. Trigger the temporary UI update inside a transition
+        startTransition(() => {
+            addOptimisticListUpdate({ id: taskListId, title: newTitle });
+        });
 
-        setTaskLists(prev => prev.map(t =>
-            t.id === taskListId ? { ...t, title: newTitle } : t
-        ));
+            const response = await fetch(`http://localhost:3000/lists/${taskListId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: newTitle })
+            });
 
-        // Background server update
-        try {
-            // await fetch(`http://localhost:3000/lists/${taskListId}`, {
-            //     method: 'PATCH',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ title: newTitle })
-            // });
-            await testUpdateFetch(taskListId, newTitle);
-        } catch (err) {
-            console.error("Failed to update task details:", err);
-            // Should revert to old one on error
-            // setTaskLists(prev => prev.map(t =>
-            //     t.id === tempList.id ? tempList : t
-            // ));
-            // const newList = await getLists();
-            // setTaskLists(await getLists());
+            if (!response.ok) {
+                // throw new Error(`Server rejected request with status: ${response.status}`);
+                return false;
+            }
 
-        }
+            setTaskLists(prev => prev.map(t =>
+                t.id === taskListId ? { ...t, title: newTitle } : t
+            ));
+
+            return true;
     }
 
     // Test function used to fetching error rollback
-    async function testUpdateFetch(taskListId: string, newTitle: string) {
-        await fetch(`http://localhost:3000/lists/${taskListId}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: { newTitle: newTitle } })
-        });
-    }
-
-    // Not used yet
-    async function updateListDetails(listId: string, title: string) {
-        if(listId === null || listId === undefined || listId === "") {
-
-        }
-        const listIndex: number  = taskLists.findIndex((item)=> item.id === listId);
-        if (listIndex === -1){ return; }
-
-        taskLists[listIndex].title = title;
-
-        // Background server update
-        try {
-            await fetch(`http://localhost:3000/lists/${listId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: title})
-            });
-        } catch (err) {
-            console.error("Failed to update task details:", err);
-        }
-    }
-
+    // async function testUpdateFetch(taskListId: string, newTitle: string) {
+    //     const response = await fetch(`http://localhost:3000/lists/${taskListId}`, {
+    //         method: 'PATCH',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify({ title: { newTitle: newTitle } })
+    //     });
+    //
+    //     if (!response.ok) {
+    //         throw new Error(`Server rejected request with status: ${response.status}`);
+    //     }
+    //
+    //     return response.json();
+    // }
+    
     function handleDragStartTask(taskId: string) {
         setDraggedTaskId(taskId);
     }
@@ -279,7 +271,7 @@ function Content() {
 
     return (
         <div className="task-container">
-            {taskLists.map((item) => {
+            {optimisticTaskLists.map((item) => {
                 let renderTasks = [...(groupedTasks[item.id] ?? [])];
 
                 if (draggedTaskId && placeholder && placeholder.listId === item.id) {
