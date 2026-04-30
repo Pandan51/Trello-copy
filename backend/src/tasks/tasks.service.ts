@@ -44,7 +44,7 @@ export class TasksService {
     title: string,
     description: string,
     listId: string,
-    position: number,
+    position: string,
   ): Promise<CreateTaskDto> {
     return this.prisma.task.create({
       data: {

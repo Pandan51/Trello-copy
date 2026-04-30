@@ -1,14 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import  { PrismaService } from "../prisma/prisma.service";
-import { CreateTaskListDto, UpdateTaskListDto } from "./dto/create-list.dto";
-
+import {Injectable} from '@nestjs/common';
+import {PrismaService} from '../prisma/prisma.service';
+import {CreateTaskListDto, UpdateTaskListDto} from './dto/create-list.dto';
 
 @Injectable()
 export class ListsService {
     // The Chef needs access to the Pantry (Database)
-    constructor(private prisma: PrismaService) {}
+    constructor(private prisma: PrismaService) {
+    }
 
-    async getAllLists():Promise<CreateTaskListDto[]> {
+    async getAllLists(): Promise<CreateTaskListDto[]> {
         return this.prisma.list.findMany();
     }
 
@@ -18,7 +18,7 @@ export class ListsService {
         });
     }
 
-    async createList(title: string):Promise<CreateTaskListDto> {
+    async createList(title: string): Promise<CreateTaskListDto> {
         return this.prisma.list.create({
             data: {
                 title: title,
@@ -28,16 +28,17 @@ export class ListsService {
 
     async deleteList(id: string): Promise<CreateTaskListDto> {
         return this.prisma.list.delete({
-            where: { id: id },
+            where: {id: id},
         });
     }
 
-    async patchList(id: string, updateData: UpdateTaskListDto):Promise<CreateTaskListDto> {
+    async patchList(
+        id: string,
+        updateData: UpdateTaskListDto,
+    ): Promise<CreateTaskListDto> {
         return this.prisma.list.update({
-            where: { id: id },
+            where: {id: id},
             data: updateData,
         });
     }
-
-
 }

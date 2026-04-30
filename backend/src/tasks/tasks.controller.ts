@@ -7,32 +7,12 @@ import {
   Delete,
   Patch,
 } from '@nestjs/common';
-import { PartialType } from '@nestjs/mapped-types';
 import { TasksService } from './tasks.service';
-
-class CreateTaskDto {
-  id: string;
-  listId: string;
-  title: string;
-  description: string;
-  position: number;
-}
-
-class UpdateTaskDto extends PartialType(CreateTaskDto) {}
+import { CreateTaskDto, UpdateTaskDto } from './dto/create-task.dto';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private tasksService: TasksService) {}
-
-  // A temporary in-memory database (just like your React state)
-  // private tasks: CreateTaskDto[] = [
-  //
-  //     {id:crypto.randomUUID(), listId: "1", title: "Card 1", description: "This is card 1"},
-  //     {id:crypto.randomUUID(), listId: "2", title:"Card 2", description:"This is card 2"},
-  //     {id:crypto.randomUUID(), listId: "2", title:"Card 1", description:"This is card 1"},
-  //     {id:crypto.randomUUID(), listId: "3", title: "Card 2", description:"This is card 2"}
-  //
-  // ];
 
   // ----------------------------------------------------
   // GET Endpoint: Fetch all tasks
@@ -55,7 +35,7 @@ export class TasksController {
       title: string;
       description: string;
       listId: string;
-      position: number;
+      position: string;
     },
   ) {
     return this.tasksService.createTask(
@@ -78,6 +58,7 @@ export class TasksController {
   ): Promise<UpdateTaskDto> {
     return this.tasksService.patchTask(id, sentTask);
   }
+
   @Get('/:id')
   async getTask(@Param('id') id: string): Promise<any> {
     return this.tasksService.getTaskById(id);
