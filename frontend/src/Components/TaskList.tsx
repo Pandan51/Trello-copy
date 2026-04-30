@@ -34,7 +34,7 @@ function TaskList({
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = "move";
-
+        console.log(taskList.length);
         // If the list is empty, tell the parent to show the placeholder!
         if (taskList.length === 0) {
             onListHover(id);

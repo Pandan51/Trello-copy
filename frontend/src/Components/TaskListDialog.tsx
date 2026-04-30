@@ -17,6 +17,7 @@ export default function TaskDialog({ list, onClose, onSave }: Props) {
     // Local state for the editable fields, pre-filled with the current task's data
     const [title, setTitle] = useState(list.title);
 
+
     useEffect(() => {
         // When this component mounts, natively show it as a modal (which adds the backdrop!)
         const dialog = dialogRef.current;

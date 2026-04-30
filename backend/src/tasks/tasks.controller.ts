@@ -8,8 +8,7 @@ import {
   Patch,
 } from '@nestjs/common';
 import { PartialType } from '@nestjs/mapped-types';
-import { TasksService } from "./tasks.service";
-
+import { TasksService } from './tasks.service';
 
 class CreateTaskDto {
   id: string;
@@ -19,9 +18,7 @@ class CreateTaskDto {
   position: number;
 }
 
-class UpdateTaskDto extends PartialType(CreateTaskDto) {
-
-}
+class UpdateTaskDto extends PartialType(CreateTaskDto) {}
 
 @Controller('tasks')
 export class TasksController {
@@ -52,8 +49,21 @@ export class TasksController {
   // URL: POST http://localhost:3000/tasks
   // ----------------------------------------------------
   @Post()
-  async createTask(@Body() body: { title: string; description: string; listId: string, position: number }) {
-    return this.tasksService.createTask(body.title, body.description, body.listId, body.position);
+  async createTask(
+    @Body()
+    body: {
+      title: string;
+      description: string;
+      listId: string;
+      position: number;
+    },
+  ) {
+    return this.tasksService.createTask(
+      body.title,
+      body.description,
+      body.listId,
+      body.position,
+    );
   }
 
   @Delete('/:id')
@@ -63,12 +73,18 @@ export class TasksController {
 
   @Patch('/:id')
   async patchTask(
-      @Param('id') id: string,
-      @Body() sentTask: UpdateTaskDto): Promise<UpdateTaskDto> {
+    @Param('id') id: string,
+    @Body() sentTask: UpdateTaskDto,
+  ): Promise<UpdateTaskDto> {
     return this.tasksService.patchTask(id, sentTask);
   }
   @Get('/:id')
-  async getTask(@Param('id') id: string): Promise<any>{
+  async getTask(@Param('id') id: string): Promise<any> {
     return this.tasksService.getTaskById(id);
+  }
+
+  @Get('/:id/detail')
+  async getTaskDetail(@Param('id') id: string): Promise<any> {
+    return this.tasksService.getTaskDetail(id);
   }
 }
