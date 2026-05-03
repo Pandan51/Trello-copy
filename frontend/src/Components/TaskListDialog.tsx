@@ -25,7 +25,7 @@ export default function TaskDialog({ list, onClose, onSave }: Props) {
             dialog.showModal();
         }
 
-        // Handle the native behavior where the user presses the 'Escape' key
+        // Handle the native behavior where the user pres   ses the 'Escape' key
         const handleCancel = (e: Event) => {
             e.preventDefault();
             onClose();
@@ -41,14 +41,8 @@ export default function TaskDialog({ list, onClose, onSave }: Props) {
 
     return (
         <dialog
+            className={"popup-detail"}
             ref={dialogRef}
-            style={{
-                padding: '20px',
-                borderRadius: '8px',
-                border: 'none',
-                minWidth: '300px',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-            }}
         >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <h2 style={{ margin: 0 }}>Edit Task</h2>

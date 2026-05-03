@@ -76,15 +76,15 @@ export default function TaskDialog({ task, onClose, onSave }: Props) {
     };
 
     return (
-        <dialog
+        <dialog className={"popup-detail"}
             ref={dialogRef}
-            style={{
-                padding: '20px',
-                borderRadius: '8px',
-                border: 'none',
-                minWidth: '300px',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-            }}
+            // style={{
+            //     padding: '20px',
+            //     borderRadius: '8px',
+            //     border: 'none',
+            //     minWidth: '300px',
+            //     boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+            // }}
         >
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                 <h2 style={{ margin: 0 }}>Edit Task</h2>
@@ -102,7 +102,7 @@ export default function TaskDialog({ task, onClose, onSave }: Props) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <label style={{ fontWeight: 'bold' }}>Description</label>
                     <textarea
-                        style={{ padding: '8px', minHeight: '100px', fontSize: '16px', resize: 'vertical' }}
+                        style={{ padding: '8px', minHeight: '100px', fontSize: '16px', resize: 'vertical', maxHeight: "250px", overflow: "hidden"  }}
                         value={isLoading ? "Loading description..." : description}
                         onChange={(e) => setDescription(e.target.value)}
                         disabled={isLoading} // Disable input while loading
