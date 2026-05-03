@@ -79,5 +79,18 @@
     flex-direction: column;
 }
 
+.popup-detail{
+    width: auto;
+    height: auto;
+    max-height: 480px;
+    padding: 20px;
+    border-radius: 8px;
+    border: none;
+    min-width: 300px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    max-width: 55%;
+
+}
+
 
 
