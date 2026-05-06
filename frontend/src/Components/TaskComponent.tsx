@@ -33,6 +33,10 @@ function TaskComponent({
                     margin: '10px 0',
                     borderRadius: '5px'
                 }}
+                onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation(); // <-- CRITICAL: Prevents the hover from falling through to the List
+                }}
             />
         );
     }
@@ -56,6 +60,7 @@ function TaskComponent({
     // 4. DRAG OVER & THE MATH
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault(); // CRITICAL to allow dropping!
+        e.stopPropagation();
         e.dataTransfer.dropEffect = "move";
 
         // Get the physical dimensions of THIS specific card
@@ -78,7 +83,7 @@ function TaskComponent({
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDragOver={handleDragOver}
-            style={{ cursor: 'grab' }} // Optional UI polish
+            // style={{ cursor: 'grab' }} // Optional UI polish
         >
             <h3>{title}</h3>
             {/* Wrap the delete component in a span that stops the click event from bubbling up to the dialog */}

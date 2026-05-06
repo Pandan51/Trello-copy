@@ -1,6 +1,4 @@
-*,
-::before,
-::after {
+*, ::before, ::after {
   --tw-border-spacing-x: 0;
   --tw-border-spacing-y: 0;
   --tw-translate-x: 0;
@@ -132,7 +130,7 @@
 
 ::before,
 ::after {
-  --tw-content: "";
+  --tw-content: '';
 }
 
 /*
@@ -154,11 +152,9 @@ html,
   -moz-tab-size: 4;
   /* 3 */
   -o-tab-size: 4;
-  tab-size: 4;
+     tab-size: 4;
   /* 3 */
-  font-family:
-    ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   /* 4 */
   font-feature-settings: normal;
   /* 5 */
@@ -201,7 +197,7 @@ Add the correct text decoration in Chrome, Edge, and Safari.
 
 abbr:where([title]) {
   -webkit-text-decoration: underline dotted;
-  text-decoration: underline dotted;
+          text-decoration: underline dotted;
 }
 
 /*
@@ -247,9 +243,7 @@ code,
 kbd,
 samp,
 pre {
-  font-family:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   /* 1 */
   font-feature-settings: normal;
   /* 2 */
@@ -350,9 +344,9 @@ select {
 */
 
 button,
-input:where([type="button"]),
-input:where([type="reset"]),
-input:where([type="submit"]) {
+input:where([type='button']),
+input:where([type='reset']),
+input:where([type='submit']) {
   -webkit-appearance: button;
   /* 1 */
   background-color: transparent;
@@ -399,7 +393,7 @@ Correct the cursor style of increment and decrement buttons in Safari.
 2. Correct the outline style in Safari.
 */
 
-[type="search"] {
+[type='search'] {
   -webkit-appearance: textfield;
   /* 1 */
   outline-offset: -2px;
@@ -492,8 +486,7 @@ textarea {
 2. Set the default placeholder color to the user's configured gray 400 color.
 */
 
-input::-moz-placeholder,
-textarea::-moz-placeholder {
+input::-moz-placeholder, textarea::-moz-placeholder {
   opacity: 1;
   /* 1 */
   color: #9ca3af;
@@ -594,9 +587,7 @@ video {
 }
 
 .filter {
-  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast)
-    var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate)
-    var(--tw-sepia) var(--tw-drop-shadow);
+  filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
 :root {
@@ -607,7 +598,7 @@ video {
 
 /*#39C693*/
 
-.navbar {
+.navbar{
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -615,7 +606,7 @@ video {
   height: 100px;
 }
 
-.picture-placeholder {
+.picture-placeholder{
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -626,14 +617,14 @@ video {
   align-items: center;
 }
 
-.picture-profile {
+.picture-profile{
   width: 20px;
   height: 20px;
   border-radius: 50%;
 }
 
-.profile-detail {
-  background-color: #0a0093;
+.profile-detail{
+  background-color: #0A0093;
   color: #899300;
   width: 200px;
   height: 400px;
@@ -641,50 +632,50 @@ video {
   margin-top: 25px;
 }
 
-.task-container {
+.task-container{
   display: flex;
   margin: 5%;
   padding: 5px;
   gap: 10px;
 }
 
-.task-box {
+.task-box{
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.task-list {
+.task-list{
   display: flex;
   padding: 10px;
-  background-color: #9339c6;
+  background-color: #9339C6;
   flex-direction: column;
   height: -moz-fit-content;
   height: fit-content;
 }
 
-.task-list-h2 {
+.task-list-h2{
   height: 28px;
 }
 
-.task-list-h2:hover {
+.task-list-h2:hover{
   background-color: #84cf48;
 }
 
-.task {
-  background-color: #c69339;
+.task{
+  background-color: #C69339;
   color: black;
   width: 200px;
   height: 180px;
   padding: 10px;
 }
 
-.task-add-form {
+.task-add-form{
   display: flex;
   flex-direction: column;
 }
 
-.popup-detail {
+.popup-detail{
   width: auto;
   height: auto;
   max-height: 480px;
@@ -692,6 +683,9 @@ video {
   border-radius: 8px;
   border: none;
   min-width: 300px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   max-width: 55%;
 }
+
+
+
