@@ -1,3 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
     --main-bg-color: #9339c6;
@@ -60,9 +63,13 @@
     padding: 10px;
     background-color: #9339C6;
     flex-direction: column;
+    height: fit-content;
 }
 .task-list-h2{
     height: 28px;
+}
+.task-list-h2:hover{
+    background-color: #84cf48;
 }
 
 .task{

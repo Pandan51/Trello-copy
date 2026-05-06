@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import DeleteTaskList from "./DeleteTaskList.tsx";
 
 type TaskList = {
     id: string;
@@ -8,9 +9,10 @@ type Props = {
     list: TaskList;
     onSave: (id: string, title: string) => void;
     onClose: () => void;
+    onDeleteTaskList: (listId: string) => void;
 }
 
-export default function TaskDialog({ list, onClose, onSave }: Props) {
+export default function TaskDialog({ list, onClose, onSave, onDeleteTaskList }: Props) {
     // We need a ref to access the native HTML dialog element's methods
     const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -39,13 +41,19 @@ export default function TaskDialog({ list, onClose, onSave }: Props) {
         onClose(); // Unmount the dialog
     };
 
+    const handleDelete = () => {
+        onDeleteTaskList(list.id);
+        onClose();
+    }
+
     return (
         <dialog
             className={"popup-detail"}
             ref={dialogRef}
         >
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <h2 style={{ margin: 0 }}>Edit Task</h2>
+                <h2 style={{ margin: 0 }}>Edit list</h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                     <label style={{ fontWeight: 'bold' }}>Title</label>
@@ -57,9 +65,12 @@ export default function TaskDialog({ list, onClose, onSave }: Props) {
                     />
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-                    <button type="button" onClick={onClose} style={{ padding: '8px 16px' }}>Cancel</button>
-                    <button type="button" onClick={handleSave} style={{ padding: '8px 16px', backgroundColor: '#9339C6', color: 'white', border: 'none', borderRadius: '4px' }}>Save</button>
+                <div className="flex justify-between items-center">
+                    <DeleteTaskList onDeleteList={() => handleDelete()}/>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                        <button type="button" onClick={onClose} style={{ padding: '8px 16px' }}>Cancel</button>
+                        <button type="button" onClick={handleSave} style={{ padding: '8px 16px', backgroundColor: '#9339C6', color: 'white', border: 'none', borderRadius: '4px' }}>Save</button>
+                    </div>
                 </div>
             </div>
         </dialog>

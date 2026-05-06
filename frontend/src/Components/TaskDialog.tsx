@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import DeleteTask from "./DeleteTask.tsx";
 
 type Task = {
     id: string;
@@ -10,9 +11,10 @@ type Props = {
     task: Task;
     onSave: (id: string, title: string, description: string) => void;
     onClose: () => void;
+    onDeleteTask: (taskId: string) => void;
 }
 
-export default function TaskDialog({ task, onClose, onSave }: Props) {
+export default function TaskDialog({ task, onClose, onSave, onDeleteTask }: Props) {
     const dialogRef = useRef<HTMLDialogElement>(null);
 
     const [title, setTitle] = useState(task.title);
@@ -75,6 +77,11 @@ export default function TaskDialog({ task, onClose, onSave }: Props) {
         onClose();
     };
 
+    const handleDelete = () => {
+        onDeleteTask(task.id);
+        onClose();
+    }
+
     return (
         <dialog className={"popup-detail"}
             ref={dialogRef}
@@ -109,22 +116,25 @@ export default function TaskDialog({ task, onClose, onSave }: Props) {
                     />
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
-                    <button type="button" onClick={onClose} style={{ padding: '8px 16px' }}>Cancel</button>
-                    <button
-                        type="button"
-                        onClick={handleSave}
-                        disabled={isLoading} // Prevent saving before data loads
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: isLoading ? '#ccc' : '#9339C6',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: isLoading ? 'not-allowed' : 'pointer'
-                        }}>
-                        Save
-                    </button>
+                <div className="flex justify-between items-center">
+                    <DeleteTask onDeleteTask={()=> handleDelete()}/>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                        <button type="button" onClick={onClose} style={{ padding: '8px 16px' }}>Cancel</button>
+                        <button
+                            type="button"
+                            onClick={handleSave}
+                            disabled={isLoading} // Prevent saving before data loads
+                            style={{
+                                padding: '8px 16px',
+                                backgroundColor: isLoading ? '#ccc' : '#9339C6',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: isLoading ? 'not-allowed' : 'pointer'
+                            }}>
+                            Save
+                        </button>
+                    </div>
                 </div>
             </div>
         </dialog>
