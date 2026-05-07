@@ -188,33 +188,33 @@ function Content() {
             return;
         }
 
-        let newPos = "";
+        const taskToMove = tasks.find(t => t.id === taskId);
+        if (!taskToMove) {
+            handleDragEnd();
+            return;
+        }
 
-        setTasks(prevTasks => {
-            const taskToMove = prevTasks.find(t => t.id === taskId);
-            if (!taskToMove) return prevTasks;
+        // 2. Do the math BEFORE calling setTasks
+        const newTasks = tasks.filter(t => t.id !== taskId);
+        const targetList = newTasks.filter(t => t.listId === listId).sort((a,b) => a.position.localeCompare(b.position));
 
-            // Mathematical calculation is safe because it uses `prevTasks`
-            // which does not contain the visual Ghost tasks!
-            const newTasks = prevTasks.filter(t => t.id !== taskId);
-            const targetList = newTasks.filter(t => t.listId === listId).sort((a,b) => a.position.localeCompare(b.position));
+        let insertIndex = targetList.length;
 
-            let insertIndex = targetList.length;
-
-            if (placeholder.overTaskId) {
-                const targetIdx = targetList.findIndex(t => t.id === placeholder.overTaskId);
-                if (targetIdx !== -1) {
-                    insertIndex = placeholder.isBefore ? targetIdx : targetIdx + 1;
-                }
+        if (placeholder.overTaskId) {
+            const targetIdx = targetList.findIndex(t => t.id === placeholder.overTaskId);
+            if (targetIdx !== -1) {
+                insertIndex = placeholder.isBefore ? targetIdx : targetIdx + 1;
             }
+        }
 
-            const prevRank = insertIndex > 0 ? targetList[insertIndex - 1].position : null;
-            const nextRank = insertIndex < targetList.length ? targetList[insertIndex].position : null;
+        const prevRank = insertIndex > 0 ? targetList[insertIndex - 1].position : null;
+        const nextRank = insertIndex < targetList.length ? targetList[insertIndex].position : null;
 
-            newPos = getRankBetween(prevRank, nextRank);
+        // 3. Generate the actual string!
+        const newPos = getRankBetween(prevRank, nextRank);
 
-            return [...newTasks, { ...taskToMove, listId, position: newPos }];
-        });
+        // 4. NOW safely update the state using the pre-calculated value
+        setTasks([...newTasks, { ...taskToMove, listId, position: newPos }]);
 
         handleDragEnd();
 
@@ -238,7 +238,7 @@ function Content() {
             await fetch(`http://localhost:3000/tasks/${taskId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: newTitle, description: newDescription })
+                body: JSON.stringify({ title: newTitle, description: newDescription})
             });
         } catch (err) {
             console.error("Failed to update task details:", err);
@@ -299,7 +299,7 @@ function Content() {
 
     return (
         <div className="task-container">
-            <h1 className="dark: ">Test</h1>
+            {/*<h1 className="text-5xl dark:text-8xl ">Test</h1>*/}
             {optimisticTaskLists.map((item) => {
                 let renderTasks = [...(groupedTasks[item.id] ?? [])];
 

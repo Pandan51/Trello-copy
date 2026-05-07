@@ -6,13 +6,27 @@ type Props = {
 }
 
 function ProfilePopup({isToggle}: Props){
-    let theme = useContext(ThemeContext);
-
+    const {theme, setTheme} = useContext(ThemeContext);
+    
 
     console.log(theme);
     return (
         <>
-            <div style={{display: isToggle ? 'block': 'none'}} className="profile-detail bg-amber-600">New content</div>
+            <div className={`${isToggle ? "flex  flex-col justify-between p-2.5 gap-2 profile-detail bg-black dark:bg-amber-50" : "hidden"}`}>
+                Tady maj bejt udaje o uzivateli ale ja sem moc line
+                <button onClick={(e)=>{
+                    e.stopPropagation();
+                    if(theme === "dark") {
+                        setTheme("light");
+                    }
+                    else if (theme === "light") {
+                        setTheme("dark");
+                    }
+
+                }
+                }>Change theme</button>
+            </div>
+
         </>
     )
 }
