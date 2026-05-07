@@ -299,6 +299,7 @@ function Content() {
 
     return (
         <div className="task-container">
+            <h1 className="dark: ">Test</h1>
             {optimisticTaskLists.map((item) => {
                 let renderTasks = [...(groupedTasks[item.id] ?? [])];
 

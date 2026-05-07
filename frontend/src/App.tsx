@@ -1,13 +1,16 @@
 
 import "./App.css";
 import "./Components/Content.tsx";
-
-
 import Navbar from "./Components/Navbar.tsx";
 import Content from "./Components/Content.tsx";
+import { ThemeContext } from "./Context/ThemeContext.ts";
+import {useContext, useState} from "react";
 
 
 function App() {
+
+    // const ThemeContext = ThemeContext();
+    const [theme, setTheme] = useState('dark');
 
     // Handler for when the drag starts
     const handleDragStart = (e: React.DragEvent) => {
@@ -34,13 +37,22 @@ function App() {
 
 
     return (
-    <>
+    <ThemeContext value={theme}>
         <Navbar email={"example@gmail.com"}/>
+        <button onClick={()=>{
+            if(theme === "dark") {
+                setTheme("light");
+            }
+            else if (theme === "light") {
+                setTheme("dark");
+            }
+        }
+        }>Change theme</button>
         <Content/>
         <h2>Drag box</h2>
         <p id="p1" draggable="true" onDragStart={handleDragStart}>This element is draggable.</p>
         <p id="target" onDragOver={handleDragOver} onDrop={handleDrop}>Drop Zone</p>
-    </>
+    </ThemeContext>
   )
 }
 
