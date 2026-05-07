@@ -78,7 +78,7 @@ function TaskComponent({
 
     return (
         <div onClick={onClick}
-            className="task"
+            className="task border border-black"
             draggable="true"
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}

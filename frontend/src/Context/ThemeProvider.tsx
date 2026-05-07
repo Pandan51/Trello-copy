@@ -1,52 +1,39 @@
-import { type PropsWithChildren, useEffect, useState } from "react";
-import { ThemeContext } from "./ThemeContext.ts";
+import {type PropsWithChildren, type ReactNode, useEffect, useState} from "react";
+import {ThemeContext} from "./ThemeContext.ts";
 
 export default function ThemeProvider({ children }: PropsWithChildren) {
-  // 1. Initialize from localStorage, defaulting to 'system'
-  const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("theme") || "system";
-  });
+    const [theme, setTheme] = useState(() => {
+        // Did the user manually save a preference before?
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            return savedTheme;
+        }
 
-  useEffect(() => {
-    const root = window.document.documentElement;
+        // If no saved preference, check what their Operating System prefers
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return 'dark';
+        }
 
-    // 2. A helper function to apply the actual CSS class
-    const applyTheme = (currentTheme: string) => {
-      root.classList.remove("light", "dark");
+        // Default fallback
+        return 'light';
+    });
 
-      if (currentTheme === "system") {
-        // Check what the OS prefers right now
-        const systemPrefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        root.classList.add(systemPrefersDark ? "dark" : "light");
-      } else {
-        // It's explicitly 'light' or 'dark'
-        root.classList.add(currentTheme);
-      }
-    };
+    // 2. Every time the theme changes, update the HTML class AND save to localStorage
+    useEffect(() => {
+        const root = window.document.documentElement;
 
-    // Apply the theme and save their choice
-    applyTheme(theme);
-    localStorage.setItem("theme", theme);
+        root.classList.remove('light', 'dark');
+        root.classList.add(theme);
 
-    // 3. Pro Feature: Listen for OS changes IF "system" is selected
-    if (theme === "system") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+        // Save their choice so they don't lose it on refresh!
+        localStorage.setItem('theme', theme);
+    }, [theme]);
 
-      const handleOSChange = () => applyTheme("system");
-
-      // Listen for changes in the OS theme
-      mediaQuery.addEventListener("change", handleOSChange);
-
-      // Cleanup listener when component unmounts or theme state changes
-      return () => mediaQuery.removeEventListener("change", handleOSChange);
-    }
-  }, [theme]);
-
-  return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+    return (
+        <ThemeContext.Provider value={{theme,setTheme}}>
+            <div data-theme={theme}>
+            {children}
+            </div>
+        </ThemeContext.Provider>
+    )
 }
