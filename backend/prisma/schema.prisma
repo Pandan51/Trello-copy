@@ -22,11 +22,12 @@ model List {
 }
 
 model Task {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
   description String
   // Phase 2: The magic Trello sorting column!
-  position    String @default("a")
+  position    String  @default("a")
+  completed   Boolean @default(false)
 
   // The Foreign Key relationship
   listId String

@@ -1,27 +1,38 @@
-import {useState} from "react";
+import { useState } from "react";
 
 type Props = {
-    onAddList: (title: string)=>void;
+  onAddList: (title: string) => void;
+};
 
-}
+function AddList({ onAddList }: Props) {
+  const [inputTitle, setInputTitle] = useState("");
 
-function AddList({onAddList}: Props) {
-    const [inputTitle, setInputTitle] = useState("");
+  return (
+    <div>
+      <form>
+        <label className="dark:text-white" htmlFor="title">Title</label>
+        <input
+          type="text"
+          id="fname"
+          name="title"
+          value={inputTitle}
+          onChange={(e) => setInputTitle(e.target.value)}
+        />
+        <button
+          type="button"
+          onClick={() => {
+              if(inputTitle != "" && inputTitle != undefined) {
+                  onAddList(inputTitle);
+              }
 
-    return(
-        <div>
-            <form>
-                <label htmlFor="title">Title</label>
-                <input type="text" id="fname" name="title" value={inputTitle} onChange={(e)=>setInputTitle(e.target.value)}/>
-                <button type="button" onClick={()=> {
-                    onAddList(inputTitle)
-                    setInputTitle("");
-                }
-                }>Add List</button>
-            </form>
-        </div>
-    )
-
+            setInputTitle("");
+          }}
+        >
+          Add List
+        </button>
+      </form>
+    </div>
+  );
 }
 
 export default AddList;
