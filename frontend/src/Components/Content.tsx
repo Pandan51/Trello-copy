@@ -1,4 +1,5 @@
-import AddList from "./AddList.tsx";
+import type {Task, TaskListType } from "../types";
+
 import {
   useMemo,
   useState,
@@ -6,24 +7,26 @@ import {
   useOptimistic,
   startTransition,
 } from "react";
+import AddList from "./AddList.tsx";
 import TaskList from "./TaskList.tsx";
 import TaskDialog from "./TaskDialog.tsx";
 import TaskListDialog from "./TaskListDialog.tsx";
 
-type Task = {
-  id: string;
-  listId: string;
-  title: string;
-  description: string;
-  position: string;
-  isGhost?: boolean;
-  isDragged?: boolean; // Added this to visually flag the source item
-};
+//type Task = {
+//   id: string;
+//   listId: string;
+//   title: string;
+//   description: string;
+//   position: string;
+//   isGhost?: boolean;
+//   isDragged?: boolean; // Added this to visually flag the source item
+//      completed?: boolean;
+// };
 
-type TaskListType = {
-  id: string;
-  title: string;
-};
+// type TaskListType = {
+//   id: string;
+//   title: string;
+// };
 
 type TaskMap = {
   [key: string]: Task[];
@@ -261,11 +264,12 @@ function Content() {
     taskId: string,
     newTitle: string,
     newDescription: string,
+    isCompleted: boolean,
   ) {
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
-          ? { ...t, title: newTitle, description: newDescription }
+          ? { ...t, title: newTitle, description: newDescription, completed: isCompleted }
           : t,
       ),
     );
@@ -274,12 +278,32 @@ function Content() {
       await fetch(`http://localhost:3000/tasks/${taskId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newTitle, description: newDescription }),
+        body: JSON.stringify({ title: newTitle, description: newDescription, completed: isCompleted }),
       });
     } catch (err) {
       console.error("Failed to update task details:", err);
     }
   }
+
+    async function toggleTaskCompletion(taskId: string, isCompleted: boolean) {
+        // 1. Optimistic UI Update
+        setTasks(prev => prev.map(t =>
+            t.id === taskId ? { ...t, completed: isCompleted } : t
+        ));
+
+        // 2. Network Request
+        try {
+            await fetch(`http://localhost:3000/tasks/${taskId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                // Notice we ONLY send the completed status!
+                // The backend PATCH endpoint will leave the title/description/position alone.
+                body: JSON.stringify({ completed: isCompleted })
+            });
+        } catch (err) {
+            console.error("Failed to update task completion:", err);
+        }
+    }
 
   async function updateTaskListDetails(taskListId: string, newTitle: string) {
     if (!taskListId) return;
@@ -409,6 +433,7 @@ function Content() {
             onListHover={handleListHover}
             onDragStartTask={handleDragStartTask}
             onDragEndTask={handleDragEnd}
+            onToggleComplete={toggleTaskCompletion}
           />
         );
       })}

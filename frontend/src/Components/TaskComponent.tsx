@@ -1,32 +1,41 @@
 import DeleteTask from "./DeleteTask.tsx";
+import type { Task } from "../types/index.ts";
+
+// type Props = {
+//   id: string;
+//   title: string;
+//   description: string;
+//   isGhost?: boolean; // The flag from Content.tsx
+//   onDeleteTask: (id: string) => void;
+//   onHover: (taskId: string, before: boolean) => void;
+//   onDragStartTask: (taskId: string) => void;
+//   onDragEndTask: () => void;
+//   onClick: () => void;
+// };
 
 type Props = {
-  id: string;
-  title: string;
-  description: string;
-  isGhost?: boolean; // The flag from Content.tsx
-  onDeleteTask: (id: string) => void;
-  onHover: (taskId: string, before: boolean) => void;
-  onDragStartTask: (taskId: string) => void;
-  onDragEndTask: () => void;
-  onClick: () => void;
-};
+    task: Task; // <-- One clean prop instead of 5!
+    onDeleteTask: (id: string) => void;
+    onHover: (taskId: string, before: boolean) => void;
+    onDragStartTask: (taskId: string) => void;
+    onDragEndTask: () => void;
+    onClick: () => void;
+    onToggleComplete: (id: string, isCompleted: boolean) => void; // Your new function
+}
 
 function TaskComponent({
-  id,
-  title,
-  description,
-  isGhost,
+  task,
   onDeleteTask,
   onHover,
   onDragStartTask,
   onDragEndTask,
   onClick,
+    onToggleComplete,
 }: Props) {
   // 1. THE GHOST RENDER
   // If the parent passes isGhost=true, we don't render a real card.
   // We render a placeholder box instead.
-  if (isGhost) {
+  if (task.isGhost) {
     return (
       <div
         className="task placeholder"
@@ -48,10 +57,10 @@ function TaskComponent({
   // 2. DRAG START
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     // Alert the Air Traffic Controller (Content.tsx)
-    onDragStartTask(id);
+    onDragStartTask(task.id);
 
     // Standard browser payload for the drop event
-    e.dataTransfer.setData("text/plain", id);
+    e.dataTransfer.setData("text/plain", task.id);
     e.dataTransfer.effectAllowed = "move";
   };
 
@@ -77,7 +86,7 @@ function TaskComponent({
     const isBefore = e.clientY < middleY;
 
     // Send the report back to the parent!
-    onHover(id, isBefore);
+    onHover(task.id, isBefore);
   };
 
   return (
@@ -90,12 +99,19 @@ function TaskComponent({
       onDragOver={handleDragOver}
       // style={{ cursor: 'grab' }} // Optional UI polish
     >
-      <h3>{title}</h3>
-      {/* Wrap the delete component in a span that stops the click event from bubbling up to the dialog */}
+
+        <div className="flex space-between">
+            <h3>{task.title}</h3>
+            <input type="checkbox" onClick={(e)=>{
+                e.stopPropagation();
+                onToggleComplete(task.id, !task.completed);
+            }} checked={task.completed}/>
+        </div>
+        {/* Wrap the delete component in a span that stops the click event from bubbling up to the dialog */}
       <span onClick={(e) => e.stopPropagation()}>
-        <DeleteTask onDeleteTask={() => onDeleteTask(id)} />
+        <DeleteTask onDeleteTask={() => onDeleteTask(task.id)} />
       </span>
-      <p>{description}</p>
+      <p>{task.description}</p>
     </div>
   );
 }
