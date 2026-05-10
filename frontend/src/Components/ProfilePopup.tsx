@@ -1,34 +1,36 @@
-import {useContext, useEffect} from "react";
-import {ThemeContext} from "../Context/ThemeContext.ts";
+import { useContext } from "react";
+import { ThemeContext } from "../Context/ThemeContext.ts";
 
 type Props = {
-    isToggle : boolean;
-}
+  isToggle: boolean;
+};
 
-function ProfilePopup({isToggle}: Props){
-    const {theme, setTheme} = useContext(ThemeContext);
-    
+function ProfilePopup({ isToggle }: Props) {
+  const { theme, setTheme } = useContext(ThemeContext);
 
-    console.log(theme);
-    return (
-        <>
-            <div className={`${isToggle ? "flex  flex-col justify-between p-2.5 gap-2 profile-detail bg-black dark:bg-amber-50" : "hidden"}`}>
-                Tady maj bejt udaje o uzivateli ale ja sem moc line
-                <button onClick={(e)=>{
-                    e.stopPropagation();
-                    if(theme === "dark") {
-                        setTheme("light");
-                    }
-                    else if (theme === "light") {
-                        setTheme("dark");
-                    }
+  console.log(theme);
+  return (
+      <>
+          <div className={`${isToggle ? 'flex' : 'hidden'} flex-col p-4 gap-4 profile-detail bg-white dark:bg-slate-800 rounded shadow-lg absolute right-0 mt-2 border border-gray-200 dark:border-slate-700`}>
+              <span className="text-black dark:text-white font-semibold">Theme Settings</span>
 
-                }
-                }>Change theme</button>
-            </div>
-
-        </>
-    )
+              {/* The Dropdown */}
+              <select
+                  value={theme}
+                  onChange={(e) => {
+                      e.stopPropagation();
+                      setTheme(e.target.value);
+                  }}
+                  onClick={(e) => e.stopPropagation()} // Prevents the popup from closing when clicking the select
+                  className="p-2 rounded bg-gray-100 dark:bg-slate-700 text-black dark:text-white border border-gray-300 dark:border-slate-600 outline-none cursor-pointer"
+              >
+                  <option value="light">Light Mode</option>
+                  <option value="dark">Dark Mode</option>
+                  <option value="system">System Preference</option>
+              </select>
+          </div>
+      </>
+  );
 }
 
 export default ProfilePopup;
