@@ -13,7 +13,7 @@ export class TasksService {
       },
     });
 
-    return tasks.map((task) => {
+    return tasks.map((task: CreateTaskDto): CreateTaskDto => {
       const maxLength = 50;
       let shortContent = task.description;
 
