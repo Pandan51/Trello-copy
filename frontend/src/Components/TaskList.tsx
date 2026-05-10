@@ -1,13 +1,14 @@
 import AddTask from "./AddTask.tsx";
 import TaskComponent from "./TaskComponent.tsx";
+import type { Task } from "../types/index.ts";
 
-type Task = {
-  id: string;
-  listId: string;
-  title: string;
-  description: string;
-  isGhost?: boolean;
-};
+// type Task = {
+//   id: string;
+//   listId: string;
+//   title: string;
+//   description: string;
+//   isGhost?: boolean;
+// };
 
 type Props = {
   id: string;
@@ -23,6 +24,7 @@ type Props = {
   onDragStartTask: (taskId: string) => void;
   onDragEndTask: () => void;
   onTaskClick: (taskId: string) => void;
+    onToggleComplete: (taskId: string, isCompleted: boolean) => void;
 };
 
 function TaskList({
@@ -38,6 +40,7 @@ function TaskList({
   onDragEndTask,
   onTaskClick,
   onTaskListClick,
+                      onToggleComplete
 }: Props) {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -87,15 +90,13 @@ function TaskList({
         {taskList.map((task) => (
           <TaskComponent
             key={task.id}
-            id={task.id}
-            title={task.title}
-            description={task.description}
-            isGhost={task.isGhost}
+            task={task}
             onDeleteTask={onDeleteTask}
             onHover={onHover}
             onDragStartTask={onDragStartTask}
             onDragEndTask={onDragEndTask}
             onClick={() => onTaskClick(task.id)}
+            onToggleComplete={onToggleComplete}
           />
         ))}
       </div>

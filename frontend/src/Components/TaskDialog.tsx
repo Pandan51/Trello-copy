@@ -1,15 +1,16 @@
 import { useRef, useState, useEffect } from "react";
 import DeleteTask from "./DeleteTask.tsx";
+import type { Task } from "../types/index.ts";
 
-type Task = {
-  id: string;
-  title: string;
-  description: string;
-};
+// type Task = {
+//   id: string;
+//   title: string;
+//   description: string;
+// };
 
 type Props = {
   task: Task;
-  onSave: (id: string, title: string, description: string) => void;
+  onSave: (id: string, title: string, description: string, isCompleted: boolean) => void;
   onClose: () => void;
   onDeleteTask: (taskId: string) => void;
 };
@@ -25,6 +26,7 @@ export default function TaskDialog({
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description); // Fallback to initial prop
   const [isLoading, setIsLoading] = useState(true); // Track loading state
+    const [isCompleted, setIsCompleted] = useState(task.completed);
 
   useEffect(() => {
     let isMounted = true; // Cleanup flag to prevent setting state on unmounted component
@@ -78,7 +80,7 @@ export default function TaskDialog({
   }, [onClose]);
 
   const handleSave = () => {
-    onSave(task.id, title, description);
+    onSave(task.id, title, description, isCompleted );
     onClose();
   };
 
@@ -101,6 +103,10 @@ export default function TaskDialog({
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
         <h2 style={{ margin: 0 }}>Edit Task</h2>
+          <input type="checkbox" onClick={(e)=>{
+              e.stopPropagation();
+              setIsCompleted(!isCompleted);
+          }} checked={isCompleted}/>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
           <label style={{ fontWeight: "bold" }}>Title</label>
