@@ -1,6 +1,8 @@
-import { useRef, useState, useEffect } from "react";
+import {useRef, useState, useEffect, useContext} from "react";
 import DeleteTask from "./DeleteTask.tsx";
-import type { Task } from "../types/index.ts";
+import type { Task } from "../types";
+import MDEditor from '@uiw/react-md-editor';
+import {ThemeContext} from "../Context/ThemeContext.ts";
 
 // type Task = {
 //   id: string;
@@ -27,41 +29,51 @@ export default function TaskDialog({
   const [description, setDescription] = useState(task.description); // Fallback to initial prop
   const [isLoading, setIsLoading] = useState(true); // Track loading state
     const [isCompleted, setIsCompleted] = useState(task.completed);
+    const { theme } = useContext(ThemeContext);
 
-  useEffect(() => {
-    let isMounted = true; // Cleanup flag to prevent setting state on unmounted component
+    useEffect(() => {
+        // 1. Create the native browser controller
+        const controller = new AbortController();
 
-    const fetchDetail = async () => {
-      setIsLoading(true);
-      try {
-        const url = `http://localhost:3000/tasks/${task.id}/detail`;
-        const detailDesc = await fetch(url, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        })
-          .then((res) => {
-            if (!res.ok) throw new Error("Network response was not ok");
-            return res.json();
-          })
-          .then((data) => data.description);
+        const fetchDetail = async () => {
+            setIsLoading(true);
+            try {
+                const url = `http://localhost:3000/tasks/${task.id}/detail`;
+                const detailDesc = await fetch(url, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                    signal: controller.signal, // 2. Plug the signal into the fetch
+                })
+                    .then((res) => {
+                        if (!res.ok) throw new Error("Network response was not ok");
+                        return res.json();
+                    })
+                    .then((data) => data.description);
 
-        if (isMounted && detailDesc) {
-          setDescription(detailDesc);
-        }
-      } catch (error) {
-        console.error("Failed to fetch task details:", error);
-        // If it fails, the description will just remain as task.description
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
+                // 3. We no longer need the 'isMounted' check!
+                // If the fetch succeeds, we know the component is still alive.
+                setDescription(detailDesc);
 
-    fetchDetail();
+            } catch (error) {
+                // 4. If we intentionally aborted it, just silently ignore it
+                if (error.name === 'AbortError') {
+                    console.log("Dialog closed, fetch cancelled!");
+                    return; // Exit early so we don't trigger setIsLoading(false) below
+                }
+                console.error("Failed to fetch task details:", error);
 
-    return () => {
-      isMounted = false; // Cleanup if dialog closes before fetch finishes
-    };
-  }, [task.id]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchDetail();
+
+        return () => {
+            // 5. Instantly kill the network request if the dialog closes
+            controller.abort();
+        };
+    }, [task.id]);
 
   // 3. Handle Dialog lifecycle
   useEffect(() => {
@@ -103,9 +115,9 @@ export default function TaskDialog({
     >
       <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
         <h2 style={{ margin: 0 }}>Edit Task</h2>
-          <input type="checkbox" onClick={(e)=>{
-              e.stopPropagation();
-              setIsCompleted(!isCompleted);
+          <input type="checkbox" onClick={(e)=> e.stopPropagation()}
+                 onChange={(e)=>{
+              setIsCompleted(e.target.checked);
           }} checked={isCompleted}/>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
@@ -118,22 +130,32 @@ export default function TaskDialog({
           />
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-          <label style={{ fontWeight: "bold" }}>Description</label>
-          <textarea
-            style={{
-              padding: "8px",
-              minHeight: "100px",
-              fontSize: "16px",
-              resize: "vertical",
-              maxHeight: "250px",
-              overflow: "hidden",
-            }}
-            value={isLoading ? "Loading description..." : description}
-            onChange={(e) => setDescription(e.target.value)}
-            disabled={isLoading} // Disable input while loading
-          />
-        </div>
+        {/*<div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>*/}
+        {/*  <label style={{ fontWeight: "bold" }}>Description</label>*/}
+        {/*  <textarea*/}
+        {/*    style={{*/}
+        {/*      padding: "8px",*/}
+        {/*      minHeight: "100px",*/}
+        {/*      fontSize: "16px",*/}
+        {/*      resize: "vertical",*/}
+        {/*      maxHeight: "250px",*/}
+        {/*      overflow: "hidden",*/}
+        {/*    }}*/}
+        {/*    value={isLoading ? "Loading description..." : description}*/}
+        {/*    onChange={(e) => setDescription(e.target.value)}*/}
+        {/*    disabled={isLoading} // Disable input while loading*/}
+        {/*  />*/}
+        {/*</div>*/}
+
+          {/*<div data-color-mode={theme === 'dark' ? 'dark' : 'light'}>*/}
+          {/*    <MDEditor*/}
+          {/*        value={description}*/}
+          {/*        onChange={*/}
+          {/*        (val) => setDescription(val || '')}*/}
+          {/*        height={200}*/}
+          {/*        preview="live" // Shows the editor and the preview side-by-side*/}
+          {/*    />*/}
+          {/*</div>*/}
 
         <div className="flex justify-between items-center">
           <DeleteTask onDeleteTask={() => handleDelete()} />
