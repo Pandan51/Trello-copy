@@ -11,6 +11,7 @@ import AddList from "./AddList.tsx";
 import TaskList from "./TaskList.tsx";
 import TaskDialog from "./TaskDialog.tsx";
 import TaskListDialog from "./TaskListDialog.tsx";
+import CopyTaskDialog from "./CopyTaskDialog.tsx";
 
 //type Task = {
 //   id: string;
@@ -81,8 +82,10 @@ function Content() {
 
   const [activeList, setActiveList] = useState<TaskListType | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+    const [taskToCopy, setTaskToCopy] = useState<Task | null>(null);
 
-  const [optimisticTaskLists, addOptimisticListUpdate] = useOptimistic(
+
+    const [optimisticTaskLists, addOptimisticListUpdate] = useOptimistic(
     taskLists,
     (currentLists, optimisticUpdate: { id: string; title: string }) => {
       return currentLists.map((list) =>
@@ -178,6 +181,34 @@ function Content() {
       console.error("Failed to add task:", err);
     }
   }
+
+    async function cloneTask(title: string, description: string, isCompleted: boolean, listId: string) {
+        // Math to put it at the bottom of the target list
+        const tasksInList = groupedTasks[listId] || [];
+        const lastRank = tasksInList.length > 0 ? tasksInList[tasksInList.length - 1].position : null;
+        const newPos = getRankBetween(lastRank, null);
+
+        try {
+            const response = await fetch("http://localhost:3000/tasks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title: title,
+                    description: description,
+                    listId: listId,
+                    position: newPos,
+                    completed: isCompleted // Make sure your backend DTO allows this on POST!
+                }),
+            });
+
+            if (response.ok) {
+                const newTask = await response.json();
+                setTasks([...tasks, newTask]);
+            }
+        } catch (err) {
+            console.error("Failed to clone task:", err);
+        }
+    }
 
   async function deleteTask(taskId: string) {
     setTasks((prev) => prev.filter((task) => task.id !== taskId));
@@ -445,6 +476,7 @@ function Content() {
           onClose={() => setActiveTask(null)}
           onSave={updateTaskDetails}
           onDeleteTask={deleteTask}
+          onInitiateCopy={(task)=> setTaskToCopy(task)}
         />
       )}
 
@@ -456,6 +488,14 @@ function Content() {
           onDeleteTaskList={deleteTaskList}
         />
       )}
+
+        {taskToCopy && (
+            <CopyTaskDialog
+                task={taskToCopy}
+                onClose={() => setTaskToCopy(null)}
+                onCopy={cloneTask}
+            />
+        )}
     </div>
   );
 }
