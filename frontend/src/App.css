@@ -57,7 +57,7 @@
 .task-list {
   display: flex;
   padding: 10px;
-  background-color: #9339c6;
+  /*background-color: #9339c6;*/
   flex-direction: column;
   height: fit-content;
 }

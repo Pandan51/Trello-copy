@@ -1,6 +1,10 @@
 import AddTask from "./CRUD/AddTask.tsx";
 import TaskComponent from "./TaskComponent.tsx";
-import type { Task } from "../types/index.ts";
+import type { Task, TaskListType } from "../types";
+import * as React from "react";
+import { useContext } from "react";
+import { ThemeContext } from "../Context/ThemeContext.ts";
+import { adjustColorBrightness } from "../utils/colorUtils.ts";
 
 // type Task = {
 //   id: string;
@@ -11,9 +15,8 @@ import type { Task } from "../types/index.ts";
 // };
 
 type Props = {
-  id: string;
-  title: string;
-  taskList: Task[];
+  taskList: TaskListType;
+  taskArr: Task[];
 
   onAddTask: (title: string, desc: string) => void;
   onDeleteTask: (taskId: string) => void;
@@ -24,13 +27,12 @@ type Props = {
   onDragStartTask: (taskId: string) => void;
   onDragEndTask: () => void;
   onTaskClick: (taskId: string) => void;
-    onToggleComplete: (taskId: string, isCompleted: boolean) => void;
+  onToggleComplete: (taskId: string, isCompleted: boolean) => void;
 };
 
 function TaskList({
-  id,
-  title,
   taskList,
+  taskArr,
   onAddTask,
   onDeleteTask,
   onChangeTaskPosition,
@@ -40,20 +42,20 @@ function TaskList({
   onDragEndTask,
   onTaskClick,
   onTaskListClick,
-                      onToggleComplete
+  onToggleComplete,
 }: Props) {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-    console.log("Length of list is: " + taskList.length);
+    console.log("Length of list is: " + taskArr.length);
     // If the list is empty, tell the parent to show the placeholder!
     // if (taskList.length === 0) {
     //     onListHover(id);
     // }
 
     // If the list is empty, anywhere is a valid drop zone to append
-    if (taskList.length === 0) {
-      onListHover(id);
+    if (taskArr.length === 0) {
+      onListHover(taskList.id);
       return;
     }
 
@@ -65,29 +67,41 @@ function TaskList({
       return;
     }
 
-    onListHover(id);
+    onListHover(taskList.id);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const data = e.dataTransfer.getData("text/plain");
 
-    onChangeTaskPosition(data, id);
+    onChangeTaskPosition(data, taskList.id);
   };
+
+  const { theme } = useContext(ThemeContext);
+  const listColor = taskList.color || "#9339c6";
+  const taskBgColor =
+    theme === "dark"
+      ? adjustColorBrightness(listColor, -50)
+      : adjustColorBrightness(listColor, 60);
 
   return (
     <div
-      className={"task-list"}
+      // className={`task-list`}
+      className={`task-list bg-[${listColor}]`}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      style={{ backgroundColor: listColor }}
     >
-      <h2 className={"task-list-h2"} onClick={() => onTaskListClick(id)}>
-        {title}
+      <h2
+        className={"task-list-h2"}
+        onClick={() => onTaskListClick(taskList.id)}
+      >
+        {taskList.title}
       </h2>
       <span onClick={(e) => e.stopPropagation()}></span>
       {/* Added minHeight so empty lists have a physical drop zone! */}
       <div className={"task-box"} style={{ minHeight: "50px" }}>
-        {taskList.map((task) => (
+        {taskArr.map((task) => (
           <TaskComponent
             key={task.id}
             task={task}
@@ -97,6 +111,8 @@ function TaskList({
             onDragEndTask={onDragEndTask}
             onClick={() => onTaskClick(task.id)}
             onToggleComplete={onToggleComplete}
+            baseColor={listColor}
+            taskColor={taskBgColor}
           />
         ))}
       </div>

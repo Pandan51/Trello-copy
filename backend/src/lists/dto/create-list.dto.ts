@@ -1,5 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsString, IsNotEmpty} from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateTaskListDto {
   @IsNotEmpty()
@@ -8,6 +8,9 @@ export class CreateTaskListDto {
   @IsNotEmpty()
   @IsString()
   title: string;
+  @IsOptional()
+  @IsString()
+  color: string;
 }
 
 export class UpdateTaskListDto extends PartialType(CreateTaskListDto) {}

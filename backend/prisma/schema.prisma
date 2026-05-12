@@ -19,6 +19,7 @@ model List {
   id    String @id @default(uuid()) // Automatically generates the UUID!
   title String
   tasks Task[] // Tells Prisma: "One list has many tasks"
+  color String @default("#9339C6") // Default to purple
 }
 
 model Task {

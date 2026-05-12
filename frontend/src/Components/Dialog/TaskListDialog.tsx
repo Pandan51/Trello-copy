@@ -1,13 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import DeleteTaskList from "../CRUD/DeleteTaskList.tsx";
+import type { TaskListType } from "../../types";
 
-type TaskList = {
-  id: string;
-  title: string;
-};
 type Props = {
-  list: TaskList;
-  onSave: (id: string, title: string) => void;
+  list: TaskListType;
+  onSave: (id: string, title: string, color: string) => void;
   onClose: () => void;
   onDeleteTaskList: (listId: string) => void;
 };
@@ -23,6 +20,7 @@ export default function TaskDialog({
 
   // Local state for the editable fields, pre-filled with the current task's data
   const [title, setTitle] = useState(list.title);
+  const [color, setColor] = useState(list.color || "#9339C6");
 
   useEffect(() => {
     // When this component mounts, natively show it as a modal (which adds the backdrop!)
@@ -41,7 +39,7 @@ export default function TaskDialog({
   }, [onClose]);
 
   const handleSave = () => {
-    onSave(list.id, title);
+    onSave(list.id, title, color);
     onClose(); // Unmount the dialog
   };
 
@@ -63,6 +61,19 @@ export default function TaskDialog({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+          <label style={{ fontWeight: "bold" }}>List Color</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="w-10 h-10 cursor-pointer border-0 p-0 rounded"
+            />
+            <span className="text-sm font-mono">{color}</span>
+          </div>
         </div>
 
         <div className="flex justify-between items-center">

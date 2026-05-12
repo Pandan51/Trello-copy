@@ -1,9 +1,4 @@
-import {
-  type PropsWithChildren,
-
-  useEffect,
-  useState,
-} from "react";
+import { type PropsWithChildren, useEffect, useState } from "react";
 import { ThemeContext } from "./ThemeContext.ts";
 
 export default function ThemeProvider({ children }: PropsWithChildren) {
