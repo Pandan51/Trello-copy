@@ -1,5 +1,6 @@
 import DeleteTask from "./DeleteTask.tsx";
 import type { Task } from "../types/index.ts";
+import removeMd from 'remove-markdown';
 
 // type Props = {
 //   id: string;
@@ -89,6 +90,13 @@ function TaskComponent({
     onHover(task.id, isBefore);
   };
 
+    const plainTextDescription = removeMd(task.description || "",
+        {
+            gfm: true,
+            stripListLeaders: true,
+            useImgAltText: false
+        });
+
   return (
     <div
       onClick={onClick}
@@ -111,7 +119,7 @@ function TaskComponent({
       <span onClick={(e) => e.stopPropagation()}>
         <DeleteTask onDeleteTask={() => onDeleteTask(task.id)} />
       </span>
-      <p>{task.description}</p>
+      <p>{plainTextDescription}</p>
     </div>
   );
 }

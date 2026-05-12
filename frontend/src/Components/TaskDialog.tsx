@@ -15,6 +15,7 @@ type Props = {
   onSave: (id: string, title: string, description: string, isCompleted: boolean) => void;
   onClose: () => void;
   onDeleteTask: (taskId: string) => void;
+    onInitiateCopy: (task: Task) => void;
 };
 
 export default function TaskDialog({
@@ -22,6 +23,7 @@ export default function TaskDialog({
   onClose,
   onSave,
   onDeleteTask,
+    onInitiateCopy,
 }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -129,33 +131,16 @@ export default function TaskDialog({
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
-
-        {/*<div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>*/}
-        {/*  <label style={{ fontWeight: "bold" }}>Description</label>*/}
-        {/*  <textarea*/}
-        {/*    style={{*/}
-        {/*      padding: "8px",*/}
-        {/*      minHeight: "100px",*/}
-        {/*      fontSize: "16px",*/}
-        {/*      resize: "vertical",*/}
-        {/*      maxHeight: "250px",*/}
-        {/*      overflow: "hidden",*/}
-        {/*    }}*/}
-        {/*    value={isLoading ? "Loading description..." : description}*/}
-        {/*    onChange={(e) => setDescription(e.target.value)}*/}
-        {/*    disabled={isLoading} // Disable input while loading*/}
-        {/*  />*/}
-        {/*</div>*/}
-
-          {/*<div data-color-mode={theme === 'dark' ? 'dark' : 'light'}>*/}
-          {/*    <MDEditor*/}
-          {/*        value={description}*/}
-          {/*        onChange={*/}
-          {/*        (val) => setDescription(val || '')}*/}
-          {/*        height={200}*/}
-          {/*        preview="live" // Shows the editor and the preview side-by-side*/}
-          {/*    />*/}
-          {/*</div>*/}
+          
+          <div data-color-mode={theme === 'dark' ? 'dark' : 'light'}>
+              <MDEditor
+                  value={description}
+                  onChange={
+                  (val) => setDescription(val || '')}
+                  height={200}
+                  preview="live" // Shows the editor and the preview side-by-side
+              />
+          </div>
 
         <div className="flex justify-between items-center">
           <DeleteTask onDeleteTask={() => handleDelete()} />
@@ -189,6 +174,17 @@ export default function TaskDialog({
             >
               Save
             </button>
+
+              <button
+                  type="button"
+                  onClick={() => {
+                      onInitiateCopy(task);
+                      onClose(); // Close the current edit dialog so the copy dialog can open
+                  }}
+                  className="text-blue-500 hover:underline px-2"
+              >
+                  Copy Task
+              </button>
           </div>
         </div>
       </div>
