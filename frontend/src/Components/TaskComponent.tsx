@@ -120,8 +120,8 @@ function TaskComponent({
           type="checkbox"
           onClick={(e) => {
             e.stopPropagation();
-            onToggleComplete(task.id, !task.completed);
           }}
+          onChange={() => onToggleComplete(task.id, !task.completed)}
           checked={task.completed}
         />
       </div>
