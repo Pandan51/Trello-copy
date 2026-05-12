@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import DeleteTaskList from "./DeleteTaskList.tsx";
+import DeleteTaskList from "../CRUD/DeleteTaskList.tsx";
 
 type TaskList = {
   id: string;

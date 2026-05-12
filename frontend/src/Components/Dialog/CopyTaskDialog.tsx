@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useContext } from "react";
-import type { Task } from "../types";
+import type { Task } from "../../types";
 import MDEditor from '@uiw/react-md-editor';
-import { ThemeContext } from "../Context/ThemeContext.ts";
+import { ThemeContext } from "../../Context/ThemeContext.ts";
 
 type Props = {
     task: Task; // The original task we are copying from

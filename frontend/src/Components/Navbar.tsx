@@ -1,4 +1,4 @@
-import ProfilePicture from "./ProfilePicture.tsx";
+import ProfilePicture from "./Profile/ProfilePicture.tsx";
 import { sha256 } from "js-sha256";
 
 function Navbar({ email }: { email: string }) {

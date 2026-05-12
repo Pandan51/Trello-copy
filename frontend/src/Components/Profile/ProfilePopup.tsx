@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { ThemeContext } from "../Context/ThemeContext.ts";
+import { ThemeContext } from "../../Context/ThemeContext.ts";
 
 type Props = {
   isToggle: boolean;

@@ -1,4 +1,4 @@
-import AddTask from "./AddTask.tsx";
+import AddTask from "./CRUD/AddTask.tsx";
 import TaskComponent from "./TaskComponent.tsx";
 import type { Task } from "../types/index.ts";
 
