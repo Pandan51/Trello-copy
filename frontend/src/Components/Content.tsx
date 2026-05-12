@@ -7,11 +7,11 @@ import {
   useOptimistic,
   startTransition,
 } from "react";
-import AddList from "./AddList.tsx";
+import AddList from "./CRUD/AddList.tsx";
 import TaskList from "./TaskList.tsx";
-import TaskDialog from "./TaskDialog.tsx";
-import TaskListDialog from "./TaskListDialog.tsx";
-import CopyTaskDialog from "./CopyTaskDialog.tsx";
+import TaskDialog from "./Dialog/TaskDialog.tsx";
+import TaskListDialog from "./Dialog/TaskListDialog.tsx";
+import CopyTaskDialog from "./Dialog/CopyTaskDialog.tsx";
 
 //type Task = {
 //   id: string;

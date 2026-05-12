@@ -1,8 +1,8 @@
 import {useRef, useState, useEffect, useContext} from "react";
-import DeleteTask from "./DeleteTask.tsx";
-import type { Task } from "../types";
+import DeleteTask from "../CRUD/DeleteTask.tsx";
+import type { Task } from "../../types";
 import MDEditor from '@uiw/react-md-editor';
-import {ThemeContext} from "../Context/ThemeContext.ts";
+import {ThemeContext} from "../../Context/ThemeContext.ts";
 
 // type Task = {
 //   id: string;
@@ -131,7 +131,7 @@ export default function TaskDialog({
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
-          
+
           <div data-color-mode={theme === 'dark' ? 'dark' : 'light'}>
               <MDEditor
                   value={description}
