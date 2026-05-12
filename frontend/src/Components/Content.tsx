@@ -1,4 +1,4 @@
-import type {Task, TaskListType } from "../types";
+import type { Task, TaskListType } from "../types";
 
 import {
   useMemo,
@@ -82,12 +82,14 @@ function Content() {
 
   const [activeList, setActiveList] = useState<TaskListType | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-    const [taskToCopy, setTaskToCopy] = useState<Task | null>(null);
+  const [taskToCopy, setTaskToCopy] = useState<Task | null>(null);
 
-
-    const [optimisticTaskLists, addOptimisticListUpdate] = useOptimistic(
+  const [optimisticTaskLists, addOptimisticListUpdate] = useOptimistic(
     taskLists,
-    (currentLists, optimisticUpdate: { id: string; title: string }) => {
+    (
+      currentLists,
+      optimisticUpdate: { id: string; title: string; color: string },
+    ) => {
       return currentLists.map((list) =>
         list.id === optimisticUpdate.id
           ? { ...list, title: optimisticUpdate.title }
@@ -182,33 +184,41 @@ function Content() {
     }
   }
 
-    async function cloneTask(title: string, description: string, isCompleted: boolean, listId: string) {
-        // Math to put it at the bottom of the target list
-        const tasksInList = groupedTasks[listId] || [];
-        const lastRank = tasksInList.length > 0 ? tasksInList[tasksInList.length - 1].position : null;
-        const newPos = getRankBetween(lastRank, null);
+  async function cloneTask(
+    title: string,
+    description: string,
+    isCompleted: boolean,
+    listId: string,
+  ) {
+    // Math to put it at the bottom of the target list
+    const tasksInList = groupedTasks[listId] || [];
+    const lastRank =
+      tasksInList.length > 0
+        ? tasksInList[tasksInList.length - 1].position
+        : null;
+    const newPos = getRankBetween(lastRank, null);
 
-        try {
-            const response = await fetch("http://localhost:3000/tasks", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    title: title,
-                    description: description,
-                    listId: listId,
-                    position: newPos,
-                    completed: isCompleted // Make sure your backend DTO allows this on POST!
-                }),
-            });
+    try {
+      const response = await fetch("http://localhost:3000/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title,
+          description: description,
+          listId: listId,
+          position: newPos,
+          completed: isCompleted, // Make sure your backend DTO allows this on POST!
+        }),
+      });
 
-            if (response.ok) {
-                const newTask = await response.json();
-                setTasks([...tasks, newTask]);
-            }
-        } catch (err) {
-            console.error("Failed to clone task:", err);
-        }
+      if (response.ok) {
+        const newTask = await response.json();
+        setTasks([...tasks, newTask]);
+      }
+    } catch (err) {
+      console.error("Failed to clone task:", err);
     }
+  }
 
   async function deleteTask(taskId: string) {
     setTasks((prev) => prev.filter((task) => task.id !== taskId));
@@ -300,7 +310,12 @@ function Content() {
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
-          ? { ...t, title: newTitle, description: newDescription, completed: isCompleted }
+          ? {
+              ...t,
+              title: newTitle,
+              description: newDescription,
+              completed: isCompleted,
+            }
           : t,
       ),
     );
@@ -309,52 +324,68 @@ function Content() {
       await fetch(`http://localhost:3000/tasks/${taskId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newTitle, description: newDescription, completed: isCompleted }),
+        body: JSON.stringify({
+          title: newTitle,
+          description: newDescription,
+          completed: isCompleted,
+        }),
       });
     } catch (err) {
       console.error("Failed to update task details:", err);
     }
   }
 
-    async function toggleTaskCompletion(taskId: string, isCompleted: boolean) {
-        // 1. Optimistic UI Update
-        setTasks(prev => prev.map(t =>
-            t.id === taskId ? { ...t, completed: isCompleted } : t
-        ));
+  async function toggleTaskCompletion(taskId: string, isCompleted: boolean) {
+    // 1. Optimistic UI Update
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, completed: isCompleted } : t)),
+    );
 
-        // 2. Network Request
-        try {
-            await fetch(`http://localhost:3000/tasks/${taskId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                // Notice we ONLY send the completed status!
-                // The backend PATCH endpoint will leave the title/description/position alone.
-                body: JSON.stringify({ completed: isCompleted })
-            });
-        } catch (err) {
-            console.error("Failed to update task completion:", err);
-        }
+    // 2. Network Request
+    try {
+      await fetch(`http://localhost:3000/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        // Notice we ONLY send the completed status!
+        // The backend PATCH endpoint will leave the title/description/position alone.
+        body: JSON.stringify({ completed: isCompleted }),
+      });
+    } catch (err) {
+      console.error("Failed to update task completion:", err);
     }
+  }
 
-  async function updateTaskListDetails(taskListId: string, newTitle: string) {
+  async function updateTaskListDetails(
+    taskListId: string,
+    newTitle: string,
+    newColor: string,
+  ) {
+    // Add newColor here!
     if (!taskListId) return;
 
     startTransition(() => {
-      addOptimisticListUpdate({ id: taskListId, title: newTitle });
+      // Add color to optimistic update
+      addOptimisticListUpdate({
+        id: taskListId,
+        title: newTitle,
+        color: newColor,
+      });
     });
 
     const response = await fetch(`http://localhost:3000/lists/${taskListId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: newTitle }),
+      body: JSON.stringify({ title: newTitle, color: newColor }), // Send color to API!
     });
 
     if (!response.ok) return false;
 
     setTaskLists((prev) =>
-      prev.map((t) => (t.id === taskListId ? { ...t, title: newTitle } : t)),
+      // Add color to standard state update
+      prev.map((t) =>
+        t.id === taskListId ? { ...t, title: newTitle, color: newColor } : t,
+      ),
     );
-
     return true;
   }
 
@@ -444,9 +475,8 @@ function Content() {
         return (
           <TaskList
             key={item.id}
-            id={item.id}
-            title={item.title}
-            taskList={renderTasks}
+            taskList={item}
+            taskArr={renderTasks}
             onTaskListClick={(listId: string) => {
               const list = taskLists.find((l) => l.id === listId);
               if (list) setActiveList(list);
@@ -476,7 +506,7 @@ function Content() {
           onClose={() => setActiveTask(null)}
           onSave={updateTaskDetails}
           onDeleteTask={deleteTask}
-          onInitiateCopy={(task)=> setTaskToCopy(task)}
+          onInitiateCopy={(task) => setTaskToCopy(task)}
         />
       )}
 
@@ -489,13 +519,13 @@ function Content() {
         />
       )}
 
-        {taskToCopy && (
-            <CopyTaskDialog
-                task={taskToCopy}
-                onClose={() => setTaskToCopy(null)}
-                onCopy={cloneTask}
-            />
-        )}
+      {taskToCopy && (
+        <CopyTaskDialog
+          task={taskToCopy}
+          onClose={() => setTaskToCopy(null)}
+          onCopy={cloneTask}
+        />
+      )}
     </div>
   );
 }
