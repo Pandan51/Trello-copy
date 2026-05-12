@@ -7,6 +7,7 @@ type Props = {
   onSave: (id: string, title: string, color: string) => void;
   onClose: () => void;
   onDeleteTaskList: (listId: string) => void;
+  onCloneList: (list: TaskListType) => void;
 };
 
 export default function TaskDialog({
@@ -14,6 +15,7 @@ export default function TaskDialog({
   onClose,
   onSave,
   onDeleteTaskList,
+  onCloneList,
 }: Props) {
   // We need a ref to access the native HTML dialog element's methods
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -78,6 +80,16 @@ export default function TaskDialog({
 
         <div className="flex justify-between items-center">
           <DeleteTaskList onDeleteList={() => handleDelete()} />
+          <button
+            type="button"
+            onClick={() => {
+              onCloneList(list);
+              onClose();
+            }}
+            className="text-blue-500 hover:text-blue-700 underline"
+          >
+            Copy List
+          </button>
           <div
             style={{
               display: "flex",
