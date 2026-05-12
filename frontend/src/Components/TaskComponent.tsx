@@ -1,4 +1,4 @@
-import DeleteTask from "./DeleteTask.tsx";
+import DeleteTask from "./CRUD/DeleteTask.tsx";
 import type { Task } from "../types/index.ts";
 import removeMd from 'remove-markdown';
 
