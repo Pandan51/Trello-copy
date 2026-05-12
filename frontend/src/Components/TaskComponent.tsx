@@ -1,6 +1,6 @@
 import DeleteTask from "./CRUD/DeleteTask.tsx";
 import type { Task } from "../types/index.ts";
-import removeMd from 'remove-markdown';
+import removeMd from "remove-markdown";
 
 // type Props = {
 //   id: string;
@@ -15,14 +15,16 @@ import removeMd from 'remove-markdown';
 // };
 
 type Props = {
-    task: Task; // <-- One clean prop instead of 5!
-    onDeleteTask: (id: string) => void;
-    onHover: (taskId: string, before: boolean) => void;
-    onDragStartTask: (taskId: string) => void;
-    onDragEndTask: () => void;
-    onClick: () => void;
-    onToggleComplete: (id: string, isCompleted: boolean) => void; // Your new function
-}
+  task: Task; // <-- One clean prop instead of 5!
+  onDeleteTask: (id: string) => void;
+  onHover: (taskId: string, before: boolean) => void;
+  onDragStartTask: (taskId: string) => void;
+  onDragEndTask: () => void;
+  onClick: () => void;
+  onToggleComplete: (id: string, isCompleted: boolean) => void; // Your new function
+  baseColor: string; // The original list color for the stripe
+  taskColor: string; // The pre-calculated background color
+};
 
 function TaskComponent({
   task,
@@ -31,7 +33,9 @@ function TaskComponent({
   onDragStartTask,
   onDragEndTask,
   onClick,
-    onToggleComplete,
+  onToggleComplete,
+  baseColor,
+  taskColor,
 }: Props) {
   // 1. THE GHOST RENDER
   // If the parent passes isGhost=true, we don't render a real card.
@@ -90,12 +94,11 @@ function TaskComponent({
     onHover(task.id, isBefore);
   };
 
-    const plainTextDescription = removeMd(task.description || "",
-        {
-            gfm: true,
-            stripListLeaders: true,
-            useImgAltText: false
-        });
+  const plainTextDescription = removeMd(task.description || "", {
+    gfm: true,
+    stripListLeaders: true,
+    useImgAltText: false,
+  });
 
   return (
     <div
@@ -105,21 +108,28 @@ function TaskComponent({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
+      style={{
+        backgroundColor: taskColor,
+        borderLeft: `6px solid ${baseColor}`,
+      }}
       // style={{ cursor: 'grab' }} // Optional UI polish
     >
-
-        <div className="flex space-between">
-            <h3>{task.title}</h3>
-            <input type="checkbox" onClick={(e)=>{
-                e.stopPropagation();
-                onToggleComplete(task.id, !task.completed);
-            }} checked={task.completed}/>
-        </div>
-        {/* Wrap the delete component in a span that stops the click event from bubbling up to the dialog */}
+      <div className="flex space-between">
+        <h3 className={"text-black dark:text-white"}>{task.title}</h3>
+        <input
+          type="checkbox"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleComplete(task.id, !task.completed);
+          }}
+          checked={task.completed}
+        />
+      </div>
+      {/* Wrap the delete component in a span that stops the click event from bubbling up to the dialog */}
       <span onClick={(e) => e.stopPropagation()}>
         <DeleteTask onDeleteTask={() => onDeleteTask(task.id)} />
       </span>
-      <p>{plainTextDescription}</p>
+      <p className={"text-black dark:text-white"}>{plainTextDescription}</p>
     </div>
   );
 }

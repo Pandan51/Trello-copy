@@ -10,7 +10,9 @@ function AddList({ onAddList }: Props) {
   return (
     <div>
       <form>
-        <label className="dark:text-white" htmlFor="title">Title</label>
+        <label className="dark:text-white" htmlFor="title">
+          Title
+        </label>
         <input
           type="text"
           id="fname"
@@ -21,9 +23,9 @@ function AddList({ onAddList }: Props) {
         <button
           type="button"
           onClick={() => {
-              if(inputTitle != "" && inputTitle != undefined) {
-                  onAddList(inputTitle);
-              }
+            if (inputTitle != "" && inputTitle != undefined) {
+              onAddList(inputTitle);
+            }
 
             setInputTitle("");
           }}
