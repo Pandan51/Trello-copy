@@ -355,6 +355,48 @@ function Content() {
     }
   }
 
+  async function cloneTaskList(list: TaskListType) {
+    try {
+      // 1. Create the new column
+      const listResponse = await fetch("http://localhost:3000/lists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(list),
+      });
+
+      if (!listResponse.ok) throw new Error("Failed to create list clone");
+      const newList = await listResponse.json();
+
+      // 2. Add the new list to the UI immediately at the end
+      setTaskLists((prev) => [...prev, newList]);
+
+      // 3. Find all tasks in the original list
+      const tasksToCopy = groupedTasks[list.id] || [];
+      if (tasksToCopy.length === 0) return; // If it's empty, we're already done!
+
+      // 4. Fire off all POST requests concurrently
+      const taskPromises = tasksToCopy.map((task) =>
+        fetch("http://localhost:3000/tasks", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: task.title,
+            description: task.description,
+            listId: newList.id, // Drop it into the new list!
+            position: task.position, // Keep the exact same LexoRank sort order!
+            completed: task.completed || false,
+          }),
+        }).then((res) => res.json()),
+      );
+
+      // 5. Wait for all of them to finish saving, then update the UI
+      const clonedTasks = await Promise.all(taskPromises);
+      setTasks((prev) => [...prev, ...clonedTasks]);
+    } catch (err) {
+      console.error("Failed to clone list:", err);
+    }
+  }
+
   async function updateTaskListDetails(
     taskListId: string,
     newTitle: string,
@@ -516,6 +558,7 @@ function Content() {
           onClose={() => setActiveList(null)}
           onSave={updateTaskListDetails}
           onDeleteTaskList={deleteTaskList}
+          onCloneList={cloneTaskList}
         />
       )}
 
@@ -524,6 +567,7 @@ function Content() {
           task={taskToCopy}
           onClose={() => setTaskToCopy(null)}
           onCopy={cloneTask}
+          taskLists={taskLists}
         />
       )}
     </div>
